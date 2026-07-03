@@ -1,34 +1,47 @@
 import time
 import logging
+import re
 from graph.state import AdminTPEState
-from graph.prompts import PROMPT_BUILD_VECTOR_QUERY
-from llm.groq_client import chat_short
 
 logger = logging.getLogger(__name__)
+
+_STOP_WORDS = {
+    "le", "la", "les", "un", "une", "des", "de", "du", "et", "ou", "mais",
+    "est", "sont", "dans", "pour", "par", "sur", "avec", "sans", "que", "qui",
+    "ce", "cette", "ces", "quel", "quelle", "quelles", "à", "au", "aux",
+    "il", "elle", "ils", "elles", "on", "nous", "vous", "je", "tu",
+    "ne", "pas", "plus", "tres", "tres", "tout", "tous", "toute", "toutes",
+    "se", "ses", "son", "sa", "leur", "leurs", "notre", "votre",
+    "comment", "pourquoi", "quand", "où", "quel", "quelle",
+}
+
+
+def _extract_keywords(text: str, max_kw: int = 8) -> list[str]:
+    words = re.findall(r"[a-zA-ZàâäéèêëïîôöùûüçÀÂÄÉÈÊËÏÎÔÖÙÛÜÇ]{3,}", text.lower())
+    keywords = [w for w in words if w not in _STOP_WORDS]
+    seen = set()
+    result = []
+    for w in keywords:
+        if w not in seen:
+            seen.add(w)
+            result.append(w)
+        if len(result) >= max_kw:
+            break
+    return result
 
 
 def node_build_vector_query(state: AdminTPEState) -> dict:
     start = time.time()
     question = state.get("question_administrateur", "")
     dossier = state.get("dossier_temporaire", {})
-    errors = state.get("errors", [])
     debug_trace = state.get("debug_trace", [])
 
-    import json
-    user_prompt = f"Question: {question}\nRésumé dossier: {json.dumps(dossier, ensure_ascii=False)[:2000]}"
+    dossier_text = question
+    if isinstance(dossier, dict):
+        dossier_text += " " + " ".join(str(v) for v in dossier.values() if isinstance(v, (str, list)))
 
-    try:
-        vector_query = chat_short(PROMPT_BUILD_VECTOR_QUERY, user_prompt, temperature=0.2, max_tokens=100)
-        vector_query = vector_query.strip().strip('"').strip("'")
-    except Exception as e:
-        errors.append({
-            "node_name": "node_build_vector_query",
-            "error_type": "llm_error",
-            "message": str(e),
-            "user_explanation": "La construction de la requête vectorielle a échoué.",
-            "suggestion": "Vérifiez la clé API Groq.",
-        })
-        vector_query = question[:200]
+    keywords = _extract_keywords(dossier_text, max_kw=6)
+    vector_query = " ".join(keywords)
 
     debug_trace.append({
         "node_name": "node_build_vector_query",
@@ -43,7 +56,6 @@ def node_build_vector_query(state: AdminTPEState) -> dict:
 
     return {
         "vector_query": vector_query,
-        "errors": errors,
         "debug_trace": debug_trace,
         "timings": timings,
     }

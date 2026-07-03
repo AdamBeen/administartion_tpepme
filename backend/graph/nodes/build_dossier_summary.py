@@ -3,7 +3,7 @@ import json
 import logging
 from graph.state import AdminTPEState
 from graph.prompts import PROMPT_EXTRACTION_DOSSIER
-from llm.gemini_client import chat_long_json
+from llm.groq_client import chat_short_json
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +22,10 @@ def node_build_temporary_dossier_summary(state: AdminTPEState) -> dict:
     if not combined_text.strip():
         combined_text = "Aucun fichier fourni. Question uniquement."
 
-    user_prompt = f"Question de l'administrateur: {question}\n\nTextes extraits des fichiers:\n{combined_text[:50000]}"
+    user_prompt = f"Question de l'administrateur: {question}\n\nTextes extraits des fichiers:\n{combined_text[:30000]}"
 
     try:
-        dossier = chat_long_json(PROMPT_EXTRACTION_DOSSIER, user_prompt)
+        dossier = chat_short_json(PROMPT_EXTRACTION_DOSSIER, user_prompt, temperature=0.3, max_tokens=4096)
         logger.info("[node_build_temporary_dossier_summary] Dossier summary created")
     except Exception as e:
         errors.append({

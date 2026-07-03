@@ -4,6 +4,37 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
+_graph_cache = None
+
+
+def _load_graph_cache():
+    global _graph_cache
+    if _graph_cache is not None:
+        return _graph_cache
+
+    nodes_col = get_collection("kg_nodes")
+    edges_col = get_collection("kg_edges_by_source")
+
+    all_nodes = list(nodes_col.find({}))
+    all_edges = list(edges_col.find({}))
+
+    node_map = {n["node_id"]: n for n in all_nodes}
+    adjacency = {}
+    for e in all_edges:
+        src = e.get("source_node_id", "")
+        tgt = e.get("target_node_id", "")
+        rel = e.get("relation_type", "")
+        adjacency.setdefault(src, []).append({"target_node_id": tgt, "relation_type": rel})
+
+    _graph_cache = {"nodes": node_map, "adjacency": adjacency, "all_nodes": all_nodes}
+    logger.info("Graph cache loaded: %d nodes, %d edges", len(node_map), len(all_edges))
+    return _graph_cache
+
+
+def clear_graph_cache():
+    global _graph_cache
+    _graph_cache = None
+
 
 def upsert_node(node: dict) -> bool:
     try:
@@ -56,8 +87,8 @@ def upsert_edge(edge: dict) -> bool:
 
 def get_node(node_id: str) -> dict | None:
     try:
-        col = get_collection("kg_nodes")
-        return col.find_one({"node_id": node_id})
+        cache = _load_graph_cache()
+        return cache["nodes"].get(node_id)
     except Exception as e:
         logger.error("Failed to get node %s: %s", node_id, e)
         return None
@@ -65,8 +96,8 @@ def get_node(node_id: str) -> dict | None:
 
 def get_all_nodes() -> list[dict]:
     try:
-        col = get_collection("kg_nodes")
-        return list(col.find({}))
+        cache = _load_graph_cache()
+        return cache["all_nodes"]
     except Exception as e:
         logger.error("Failed to get all nodes: %s", e)
         return []
@@ -83,8 +114,8 @@ def get_all_edges() -> list[dict]:
 
 def get_edges_from(source_node_id: str) -> list[dict]:
     try:
-        col = get_collection("kg_edges_by_source")
-        return list(col.find({"source_node_id": source_node_id}))
+        cache = _load_graph_cache()
+        return cache["adjacency"].get(source_node_id, [])
     except Exception as e:
         logger.error("Failed to get edges from %s: %s", source_node_id, e)
         return []
@@ -100,12 +131,14 @@ def get_edges_to(target_node_id: str) -> list[dict]:
 
 
 def find_paths_multi_hop(start_node_id: str, max_depth: int = 3) -> list[dict]:
+    cache = _load_graph_cache()
+    adjacency = cache["adjacency"]
     paths = []
 
     def _dfs(current_id: str, visited: list[str], relations: list[str], depth: int):
         if depth >= max_depth:
             return
-        edges = get_edges_from(current_id)
+        edges = adjacency.get(current_id, [])
         for edge in edges:
             target = edge.get("target_node_id", "")
             if target in visited:

@@ -47,8 +47,9 @@ def chat_short_json(
     system_prompt: str,
     user_prompt: str,
     temperature: float = 0.3,
+    max_tokens: int = 4096,
 ) -> dict:
-    text = chat_short(system_prompt, user_prompt, temperature=temperature, json_mode=True)
+    text = chat_short(system_prompt, user_prompt, temperature=temperature, max_tokens=max_tokens, json_mode=True)
     try:
         return json.loads(text)
     except json.JSONDecodeError:

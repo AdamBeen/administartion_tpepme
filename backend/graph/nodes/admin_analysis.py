@@ -24,7 +24,7 @@ def node_administrative_analysis_llm(state: AdminTPEState) -> dict:
             "Tu es un copilote interne d'instruction administrative TPE/PME au Maroc.",
             prompt_with_context,
             temperature=0.4,
-            max_tokens=8192,
+            max_tokens=4096,
         )
         logger.info("[node_administrative_analysis_llm] LLM output received, len=%d", len(raw_output))
     except Exception as e:
