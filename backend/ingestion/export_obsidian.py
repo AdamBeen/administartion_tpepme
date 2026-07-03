@@ -18,7 +18,7 @@ def export_obsidian(vault_path: str = None):
     if vault_path is None:
         vault_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-            "obsidian_vault",
+            "admin_tpe",
         )
 
     nodes_dir = os.path.join(vault_path, "nodes")

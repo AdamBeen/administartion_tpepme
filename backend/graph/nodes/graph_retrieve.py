@@ -35,14 +35,14 @@ def node_graph_retrieve_paths(state: AdminTPEState) -> dict:
         for node in all_nodes:
             if node.get("node_type") in ["Aide", "Autorisation", "Recours"]:
                 matched_nodes.append(node)
-        matched_nodes = matched_nodes[:5]
+        matched_nodes = matched_nodes[:15]
 
     paths = []
     seen = set()
-    for node in matched_nodes[:5]:
+    for node in matched_nodes[:15]:
         node_id = node.get("node_id", "")
-        raw_paths = find_paths_multi_hop(node_id, max_depth=2)
-        for rp in raw_paths[:2]:
+        raw_paths = find_paths_multi_hop(node_id, max_depth=3)
+        for rp in raw_paths[:5]:
             path_key = tuple(rp["nodes"])
             if path_key not in seen:
                 seen.add(path_key)
@@ -56,7 +56,7 @@ def node_graph_retrieve_paths(state: AdminTPEState) -> dict:
                     "relations": rp["relations"],
                     "interpretation": f"Chemin relationnel depuis {node_labels[0]}",
                 })
-        if len(paths) >= 10:
+        if len(paths) >= 30:
             break
 
     if not paths:

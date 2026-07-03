@@ -804,3 +804,81 @@ textarea::placeholder, input::placeholder {
     .form-row { flex-direction: column; }
     .main { padding: 16px; }
 }
+
+/* Graph visualization */
+.graph-viz-container {
+    margin-top: 16px;
+    background: var(--beige-light);
+    border: 1px solid var(--beige-dark);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    overflow-x: auto;
+}
+
+.graph-viz-svg {
+    display: block;
+    margin: 0 auto;
+}
+
+.graph-viz-svg .gv-node {
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.graph-viz-svg .gv-node:hover circle {
+    filter: brightness(1.1);
+    r: 24;
+}
+
+.graph-viz-svg .gv-node-circle {
+    stroke-width: 2;
+}
+
+.graph-viz-svg .gv-node-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-anchor: middle;
+    pointer-events: none;
+    user-select: none;
+}
+
+.graph-viz-svg .gv-edge {
+    stroke: var(--brown-light);
+    stroke-width: 1.5;
+    fill: none;
+    marker-end: url(#gv-arrowhead);
+}
+
+.graph-viz-svg .gv-edge-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    fill: var(--brown-light);
+    text-anchor: middle;
+    pointer-events: none;
+    user-select: none;
+}
+
+.graph-viz-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--beige-dark);
+    font-size: 11px;
+    color: var(--brown-light);
+}
+
+.graph-viz-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.graph-viz-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}

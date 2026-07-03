@@ -143,6 +143,154 @@ function renderGraphRAGPaths(paths) {
     return html;
 }
 
+const NODE_TYPE_COLORS = {
+    'aide': '#27AE60',
+    'autorisation': '#8B5E3C',
+    'recours': '#E67E22',
+    'condition': '#3498DB',
+    'piecejustificative': '#9B59B6',
+    'niveauhitl': '#C0392B',
+    'procedure': '#1ABC9C',
+    'document': '#7F8C8D',
+    'default': '#A0785A',
+};
+
+function _getNodeColor(nodeLabel) {
+    const lower = (nodeLabel || '').toLowerCase();
+    for (const [key, color] of Object.entries(NODE_TYPE_COLORS)) {
+        if (key !== 'default' && lower.includes(key)) return color;
+    }
+    return NODE_TYPE_COLORS.default;
+}
+
+function renderGraphViz(paths) {
+    if (!paths || paths.length === 0) return '';
+
+    const nodes = [];
+    const nodeMap = {};
+    const edges = [];
+
+    for (const p of paths) {
+        const nodeLabels = (p.chemin || '').split(' -> ').map(s => s.trim());
+        const nodeIds = p.noeuds || [];
+        const relations = p.relations || [];
+
+        for (let i = 0; i < nodeLabels.length; i++) {
+            const label = nodeLabels[i];
+            const id = nodeIds[i] || label;
+            if (!nodeMap[id]) {
+                nodeMap[id] = { id, label, index: nodes.length };
+                nodes.push(nodeMap[id]);
+            }
+        }
+
+        for (let i = 0; i < nodeIds.length - 1; i++) {
+            const src = nodeIds[i] || nodeLabels[i];
+            const tgt = nodeIds[i + 1] || nodeLabels[i + 1];
+            const rel = relations[i] || '';
+            edges.push({ source: src, target: tgt, label: rel });
+        }
+    }
+
+    if (nodes.length === 0) return '';
+
+    const W = 700;
+    const H = Math.max(300, nodes.length * 60 + 40);
+    const centerX = W / 2;
+    const centerY = H / 2;
+
+    const positions = [];
+    if (nodes.length <= 4) {
+        const radius = Math.min(W, H) / 2 - 60;
+        for (let i = 0; i < nodes.length; i++) {
+            const angle = (i / nodes.length) * 2 * Math.PI - Math.PI / 2;
+            positions.push({
+                x: centerX + radius * Math.cos(angle),
+                y: centerY + radius * Math.sin(angle),
+            });
+        }
+    } else {
+        const cols = Math.ceil(Math.sqrt(nodes.length));
+        const rows = Math.ceil(nodes.length / cols);
+        const colSpacing = (W - 120) / Math.max(cols - 1, 1);
+        const rowSpacing = (H - 80) / Math.max(rows - 1, 1);
+        for (let i = 0; i < nodes.length; i++) {
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            positions.push({
+                x: 60 + col * colSpacing,
+                y: 40 + row * rowSpacing,
+            });
+        }
+    }
+
+    let svg = `<svg class="graph-viz-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+    svg += `<defs><marker id="gv-arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#A0785A"/></marker></defs>`;
+
+    for (const edge of edges) {
+        const srcNode = nodeMap[edge.source];
+        const tgtNode = nodeMap[edge.target];
+        if (!srcNode || !tgtNode) continue;
+        const srcPos = positions[srcNode.index];
+        const tgtPos = positions[tgtNode.index];
+        if (!srcPos || !tgtPos) continue;
+
+        const dx = tgtPos.x - srcPos.x;
+        const dy = tgtPos.y - srcPos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 1) continue;
+        const offset = 22;
+        const endX = tgtPos.x - (dx / dist) * offset;
+        const endY = tgtPos.y - (dy / dist) * offset;
+
+        const midX = (srcPos.x + endX) / 2;
+        const midY = (srcPos.y + endY) / 2;
+
+        svg += `<line class="gv-edge" x1="${srcPos.x}" y1="${srcPos.y}" x2="${endX}" y2="${endY}"/>`;
+        if (edge.label) {
+            svg += `<text class="gv-edge-label" x="${midX}" y="${midY - 4}">${escapeHtml(edge.label)}</text>`;
+        }
+    }
+
+    for (let i = 0; i < nodes.length; i++) {
+        const node = nodes[i];
+        const pos = positions[i];
+        const color = _getNodeColor(node.label);
+        const labelShort = node.label.length > 20 ? node.label.substring(0, 18) + '…' : node.label;
+
+        svg += `<g class="gv-node" transform="translate(${pos.x},${pos.y})">`;
+        svg += `<circle class="gv-node-circle" r="20" fill="${color}" fill-opacity="0.15" stroke="${color}"/>`;
+        svg += `<text class="gv-node-label" y="4" fill="${color}">${escapeHtml(labelShort)}</text>`;
+        svg += `</g>`;
+    }
+
+    svg += `</svg>`;
+
+    const usedTypes = new Set();
+    for (const node of nodes) {
+        const lower = node.label.toLowerCase();
+        for (const [key] of Object.entries(NODE_TYPE_COLORS)) {
+            if (key !== 'default' && lower.includes(key)) {
+                usedTypes.add(key);
+                break;
+            }
+        }
+    }
+
+    let legend = '<div class="graph-viz-legend">';
+    const typeLabels = {
+        aide: 'Aide', autorisation: 'Autorisation', recours: 'Recours',
+        condition: 'Condition', piecejustificative: 'Pièce',
+        niveauhitl: 'HITL', procedure: 'Procédure', document: 'Document',
+    };
+    for (const type of usedTypes) {
+        legend += `<div class="graph-viz-legend-item"><span class="graph-viz-legend-dot" style="background:${NODE_TYPE_COLORS[type]}"></span>${typeLabels[type] || type}</div>`;
+    }
+    legend += '</div>';
+
+    return svg + legend;
+}
+
 function renderRecommandation(rec) {
     if (!rec) return '<p class="result-value">Aucune recommandation.</p>';
     const confiance = rec.niveau_confiance || 0;

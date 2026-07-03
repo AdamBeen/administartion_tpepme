@@ -245,6 +245,20 @@ function renderResults(result) {
 
     document.getElementById('rag-content').innerHTML = renderRAGResults(cleaned.resultats_rag_vectoriel || finalJson.resultats_rag_vectoriel);
     document.getElementById('graphrag-content').innerHTML = renderGraphRAGPaths(cleaned.resultats_graphrag || finalJson.resultats_graphrag);
+
+    const graphPaths = cleaned.resultats_graphrag || finalJson.resultats_graphrag || [];
+    const vizContainer = document.getElementById('graphrag-viz');
+    const obsidianBtn = document.getElementById('obsidian-export-btn');
+    if (graphPaths && graphPaths.length > 0) {
+        vizContainer.innerHTML = renderGraphViz(graphPaths);
+        vizContainer.classList.remove('hidden');
+        obsidianBtn.classList.remove('hidden');
+        obsidianBtn.onclick = () => exportToObsidian(result.run_id, graphPaths);
+    } else {
+        vizContainer.classList.add('hidden');
+        obsidianBtn.classList.add('hidden');
+    }
+
     document.getElementById('recommandation-content').innerHTML = renderRecommandation(cleaned.recommandation || finalJson.recommandation);
 
     const reponseText = cleaned.reponse_proposee || finalJson.reponse_proposee_a_l_administrateur || '';
@@ -259,4 +273,35 @@ function renderResults(result) {
     document.getElementById('timeline-content').innerHTML = renderTimeline(traces);
 
     section.scrollIntoView({ behavior: 'smooth' });
+}
+
+async function exportToObsidian(runId, graphPaths) {
+    const btn = document.getElementById('obsidian-export-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Export en cours...';
+    btn.disabled = true;
+
+    try {
+        const resp = await fetch('/api/kg/export-run-obsidian', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ run_id: runId, graph_paths: graphPaths }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            btn.innerHTML = '✓ Exporté vers Obsidian';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 3000);
+        } else {
+            throw new Error(data.detail || 'Export failed');
+        }
+    } catch (error) {
+        btn.innerHTML = '✗ Erreur export';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }, 3000);
+    }
 }

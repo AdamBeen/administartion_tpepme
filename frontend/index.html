@@ -192,8 +192,15 @@
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="5" cy="5" r="2.5" stroke="#6B4226" stroke-width="1.5"/><circle cx="15" cy="5" r="2.5" stroke="#6B4226" stroke-width="1.5"/><circle cx="10" cy="15" r="2.5" stroke="#6B4226" stroke-width="1.5"/><path d="M7 6L13 6M6 7L9 13M14 7L11 13" stroke="#6B4226" stroke-width="1.2"/></svg>
                             Résultats GraphRAG — Chemins multi-hop
                         </h2>
+                        <button id="obsidian-export-btn" class="btn btn-ghost btn-sm hidden">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4H12V10H2V4Z" stroke="currentColor" stroke-width="1.2"/><path d="M5 7L7 9L9 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                            Export Obsidian
+                        </button>
                     </div>
                     <div class="card-body" id="graphrag-content"></div>
+                    <div class="card-body" id="graphrag-viz-container" style="padding-top:0;">
+                        <div id="graphrag-viz" class="graph-viz-container hidden"></div>
+                    </div>
                 </div>
 
                 <!-- Recommandation -->

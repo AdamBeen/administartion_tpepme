@@ -130,16 +130,18 @@ def get_edges_to(target_node_id: str) -> list[dict]:
         return []
 
 
-def find_paths_multi_hop(start_node_id: str, max_depth: int = 3) -> list[dict]:
+def find_paths_multi_hop(start_node_id: str, max_depth: int = 3, max_paths: int = 50) -> list[dict]:
     cache = _load_graph_cache()
     adjacency = cache["adjacency"]
     paths = []
 
     def _dfs(current_id: str, visited: list[str], relations: list[str], depth: int):
-        if depth >= max_depth:
+        if depth >= max_depth or len(paths) >= max_paths:
             return
         edges = adjacency.get(current_id, [])
         for edge in edges:
+            if len(paths) >= max_paths:
+                return
             target = edge.get("target_node_id", "")
             if target in visited:
                 continue
