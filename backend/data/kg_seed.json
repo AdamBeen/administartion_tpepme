@@ -1,0 +1,210 @@
+{
+  "nodes": [
+    {"node_id": "aide_digitalisation", "node_type": "Aide", "label": "Aide à la digitalisation", "description": "Aide administrative destinée aux TPE/PME souhaitant digitaliser une partie de leur activité.", "tags": ["aide", "tpe", "pme", "digitalisation"]},
+    {"node_id": "aide_investissement", "node_type": "Aide", "label": "Aide à l'investissement", "description": "Soutien financier pour les projets de développement des TPE/PME.", "tags": ["aide", "investissement"]},
+    {"node_id": "aide_formalisation", "node_type": "Aide", "label": "Aide à la formalisation", "description": "Accompagnement des entreprises informelles vers le formel.", "tags": ["aide", "formalisation"]},
+    {"node_id": "accompagnement_admin", "node_type": "Aide", "label": "Accompagnement administratif", "description": "Soutien dans les démarches administratives pour TPE/PME.", "tags": ["aide", "accompagnement"]},
+    {"node_id": "aide_sectorielle", "node_type": "Aide", "label": "Aide sectorielle", "description": "Aide spécifique à un secteur d'activité.", "tags": ["aide", "sectoriel"]},
+
+    {"node_id": "autorisation_activite_commerciale", "node_type": "Autorisation", "label": "Autorisation d'activité commerciale", "description": "Autorisation d'exercer légalement une activité commerciale.", "tags": ["autorisation", "commerce"]},
+    {"node_id": "autorisation_ouverture", "node_type": "Autorisation", "label": "Autorisation d'ouverture ou d'exploitation", "description": "Autorisation requise avant l'ouverture d'un établissement.", "tags": ["autorisation", "ouverture"]},
+    {"node_id": "autorisation_local", "node_type": "Autorisation", "label": "Autorisation liée à un local", "description": "Conformité du local d'exploitation.", "tags": ["autorisation", "local"]},
+    {"node_id": "renouvellement_autorisation", "node_type": "Autorisation", "label": "Renouvellement d'autorisation", "description": "Renouvellement nécessaire avant l'expiration de l'autorisation en cours.", "tags": ["autorisation", "renouvellement"]},
+    {"node_id": "demande_complement_autorisation", "node_type": "Autorisation", "label": "Demande de complément sur autorisation", "description": "Demande de pièces complémentaires pour une autorisation.", "tags": ["autorisation", "complement"]},
+
+    {"node_id": "recours_apres_refus", "node_type": "Recours", "label": "Recours après refus", "description": "Contestation d'une décision de refus.", "tags": ["recours", "refus"]},
+    {"node_id": "recours_incomplet", "node_type": "Recours", "label": "Recours après dossier incomplet", "description": "Recours faisant suite à une demande de complément non satisfaite.", "tags": ["recours", "incomplet"]},
+    {"node_id": "recours_contre_decision", "node_type": "Recours", "label": "Recours contre une décision administrative", "description": "Contestation d'une décision jugée erronée.", "tags": ["recours", "decision"]},
+    {"node_id": "demande_reexamen", "node_type": "Recours", "label": "Demande de réexamen", "description": "Sollicitation d'un nouvel examen du dossier.", "tags": ["recours", "reexamen"]},
+    {"node_id": "contestation_motif_rejet", "node_type": "Recours", "label": "Contestation de motif de rejet", "description": "Contestation des motifs invoqués dans une décision de rejet.", "tags": ["recours", "contestation"]},
+
+    {"node_id": "registre_commerce", "node_type": "PieceJustificative", "label": "Registre de commerce (RC)", "description": "Preuve de l'enregistrement légal de l'entreprise.", "tags": ["piece", "rc"]},
+    {"node_id": "attestation_fiscale", "node_type": "PieceJustificative", "label": "Attestation fiscale", "description": "Preuve de la situation fiscale à jour.", "tags": ["piece", "fiscal"]},
+    {"node_id": "carte_identite_representant", "node_type": "PieceJustificative", "label": "Carte d'identité du représentant légal", "description": "Identification du demandeur.", "tags": ["piece", "identite"]},
+    {"node_id": "justificatif_local", "node_type": "PieceJustificative", "label": "Justificatif de local professionnel", "description": "Bail, titre de propriété ou quittance du local.", "tags": ["piece", "local"]},
+    {"node_id": "attestation_assurance", "node_type": "PieceJustificative", "label": "Attestation d'assurance", "description": "Couverture de l'activité.", "tags": ["piece", "assurance"]},
+    {"node_id": "bilan_financier", "node_type": "PieceJustificative", "label": "Bilan ou état financier", "description": "États financiers pour les aides à l'investissement.", "tags": ["piece", "finance"]},
+    {"node_id": "formulaire_demande", "node_type": "PieceJustificative", "label": "Formulaire de demande", "description": "Formulaire spécifique à la démarche.", "tags": ["piece", "formulaire"]},
+    {"node_id": "plan_digitalisation", "node_type": "PieceJustificative", "label": "Plan de digitalisation", "description": "Plan décrivant les outils numériques à intégrer.", "tags": ["piece", "digitalisation"]},
+    {"node_id": "plan_affaires", "node_type": "PieceJustificative", "label": "Plan d'affaires", "description": "Document décrivant le projet d'investissement.", "tags": ["piece", "plan"]},
+    {"node_id": "devis_proforma", "node_type": "PieceJustificative", "label": "Devis ou factures pro forma", "description": "Devis des équipements ou investissements.", "tags": ["piece", "devis"]},
+    {"node_id": "attestation_bancaire", "node_type": "PieceJustificative", "label": "Attestation bancaire", "description": "Justificatif bancaire pour les aides à l'investissement.", "tags": ["piece", "banque"]},
+    {"node_id": "plan_amenagement", "node_type": "PieceJustificative", "label": "Plan d'aménagement du local", "description": "Plan d'aménagement pour les autorisations.", "tags": ["piece", "amenagement"]},
+    {"node_id": "rapport_conformite", "node_type": "PieceJustificative", "label": "Rapport de conformité", "description": "Rapport de conformité du local ou de l'activité.", "tags": ["piece", "conformite"]},
+    {"node_id": "notification_refus", "node_type": "PieceJustificative", "label": "Notification de refus", "description": "Document notifiant une décision de refus.", "tags": ["piece", "refus"]},
+    {"node_id": "lettre_recours", "node_type": "PieceJustificative", "label": "Lettre de recours motivée", "description": "Lettre expliquant les motifs du recours.", "tags": ["piece", "recours"]},
+    {"node_id": "notification_incompletude", "node_type": "PieceJustificative", "label": "Notification d'incomplétude", "description": "Document notifiant un dossier incomplet.", "tags": ["piece", "incomplet"]},
+
+    {"node_id": "entreprise_declaree", "node_type": "Condition", "label": "Entreprise légalement déclarée", "description": "Existence légale prouvée par le registre de commerce.", "tags": ["condition"]},
+    {"node_id": "situation_fiscale_verifiable", "node_type": "Condition", "label": "Situation fiscale vérifiable", "description": "Attestation fiscale à jour.", "tags": ["condition", "fiscal"]},
+    {"node_id": "activite_eligible", "node_type": "Condition", "label": "Activité éligible", "description": "L'activité exercée doit correspondre aux secteurs éligibles.", "tags": ["condition", "activite"]},
+    {"node_id": "capacite_juridique_representant", "node_type": "Condition", "label": "Capacité juridique du représentant", "description": "Le représentant légal doit avoir le pouvoir d'agir.", "tags": ["condition", "juridique"]},
+    {"node_id": "non_redressement_judiciaire", "node_type": "Condition", "label": "Non-redressement judiciaire", "description": "L'entreprise ne doit pas être en procédure collective.", "tags": ["condition"]},
+    {"node_id": "anciennete_12_mois", "node_type": "Condition", "label": "Ancienneté minimum 12 mois", "description": "Entreprise en activité depuis au moins 12 mois.", "tags": ["condition", "anciennete"]},
+    {"node_id": "apport_personnel_minimum", "node_type": "Condition", "label": "Apport personnel minimum", "description": "Apport personnel exigé pour certaines aides.", "tags": ["condition", "apport"]},
+    {"node_id": "conformite_local", "node_type": "Condition", "label": "Conformité du local", "description": "Le local doit respecter les normes requises.", "tags": ["condition", "local"]},
+    {"node_id": "delai_recours_respecte", "node_type": "Condition", "label": "Délai de recours respecté", "description": "Le délai légal de 30 jours doit être respecté.", "tags": ["condition", "delai"]},
+    {"node_id": "local_exploitable", "node_type": "Condition", "label": "Local exploitable", "description": "Le local doit être exploitable et conforme.", "tags": ["condition", "local"]},
+
+    {"node_id": "service_commerce", "node_type": "ServiceAdministratif", "label": "Service du commerce", "description": "Service en charge des autorisations commerciales.", "tags": ["service", "commerce"]},
+    {"node_id": "service_aides_economiques", "node_type": "ServiceAdministratif", "label": "Service des aides économiques", "description": "Service en charge des aides économiques.", "tags": ["service", "aides"]},
+    {"node_id": "service_recours", "node_type": "ServiceAdministratif", "label": "Service des recours", "description": "Service en charge des recours administratifs.", "tags": ["service", "recours"]},
+
+    {"node_id": "decision_favorable", "node_type": "Decision", "label": "Décision favorable", "description": "Décision d'approbation de la demande.", "tags": ["decision", "favorable"]},
+    {"node_id": "decision_refus", "node_type": "Decision", "label": "Décision de refus", "description": "Décision de rejet de la demande.", "tags": ["decision", "refus"]},
+    {"node_id": "decision_complement", "node_type": "Decision", "label": "Décision de demande de complément", "description": "Décision demandant des pièces complémentaires.", "tags": ["decision", "complement"]},
+
+    {"node_id": "motif_ineligibilite", "node_type": "Motif", "label": "Motif d'inéligibilité", "description": "L'entreprise ne remplit pas les conditions d'éligibilité.", "tags": ["motif", "ineligibilite"]},
+    {"node_id": "motif_incompletude", "node_type": "Motif", "label": "Motif d'incomplétude", "description": "Pièces justificatives manquantes.", "tags": ["motif", "incomplet"]},
+    {"node_id": "motif_non_conformite_local", "node_type": "Motif", "label": "Motif de non-conformité du local", "description": "Le local ne respecte pas les normes.", "tags": ["motif", "conformite"]},
+    {"node_id": "motif_fiscal_irregulier", "node_type": "Motif", "label": "Motif de situation fiscale irrégulière", "description": "Attestation fiscale révélant des problèmes.", "tags": ["motif", "fiscal"]},
+    {"node_id": "motif_faux_documents", "node_type": "Motif", "label": "Motif de faux documents", "description": "Suspicion de falsification de pièces.", "tags": ["motif", "fraude"]},
+    {"node_id": "motif_delai_depasse", "node_type": "Motif", "label": "Motif de dépassement de délai", "description": "Délai de recours non respecté.", "tags": ["motif", "delai"]},
+
+    {"node_id": "delai_instruction_30_60", "node_type": "Delai", "label": "Délai d'instruction 30-60 jours", "description": "Délai d'instruction complète selon le type de demande.", "tags": ["delai", "instruction"]},
+    {"node_id": "delai_complement_30", "node_type": "Delai", "label": "Délai de complément 30 jours", "description": "Délai pour fournir les pièces complémentaires.", "tags": ["delai", "complement"]},
+    {"node_id": "delai_recours_30", "node_type": "Delai", "label": "Délai de recours 30 jours", "description": "Délai légal pour exercer un recours.", "tags": ["delai", "recours"]},
+
+    {"node_id": "statut_recu", "node_type": "StatutDossier", "label": "Reçu", "description": "Dossier enregistré.", "tags": ["statut"]},
+    {"node_id": "statut_instruction", "node_type": "StatutDossier", "label": "En instruction", "description": "Dossier en cours d'analyse.", "tags": ["statut"]},
+    {"node_id": "statut_complement_demande", "node_type": "StatutDossier", "label": "Complément demandé", "description": "Pièces manquantes notifiées.", "tags": ["statut"]},
+    {"node_id": "statut_approuve", "node_type": "StatutDossier", "label": "Approuvé", "description": "Décision favorable.", "tags": ["statut"]},
+    {"node_id": "statut_refuse", "node_type": "StatutDossier", "label": "Refusé", "description": "Décision défavorable.", "tags": ["statut"]},
+
+    {"node_id": "hitl_vert", "node_type": "NiveauHITL", "label": "HITL VERT", "description": "Dossier simple, pas d'incohérence, pièces présentes, confiance >= 0.65.", "tags": ["hitl", "vert"]},
+    {"node_id": "hitl_orange", "node_type": "NiveauHITL", "label": "HITL ORANGE", "description": "Pièce manquante, incohérence, recours, ou confiance entre 0.45 et 0.65.", "tags": ["hitl", "orange"]},
+    {"node_id": "hitl_rouge", "node_type": "NiveauHITL", "label": "HITL ROUGE", "description": "Suspicion de fraude, rejet potentiel, ou confiance < 0.45.", "tags": ["hitl", "rouge"]},
+
+    {"node_id": "action_demande_complement", "node_type": "ActionAdministrative", "label": "Demande de complément", "description": "Action de demander des pièces complémentaires.", "tags": ["action", "complement"]},
+    {"node_id": "action_validation_agent_senior", "node_type": "ActionAdministrative", "label": "Validation par agent senior", "description": "Validation requise par un agent senior.", "tags": ["action", "validation"]},
+    {"node_id": "action_responsable_service", "node_type": "ActionAdministrative", "label": "Validation par responsable de service", "description": "Validation requise par le responsable de service.", "tags": ["action", "responsable"]},
+
+    {"node_id": "risque_fraude", "node_type": "RisqueAdministratif", "label": "Suspicion de fraude", "description": "Risque de falsification ou de fraude documentaire.", "tags": ["risque", "fraude"]},
+    {"node_id": "risque_incoherence_documentaire", "node_type": "RisqueAdministratif", "label": "Incohérence documentaire", "description": "Conflit entre documents du dossier.", "tags": ["risque", "incoherence"]},
+    {"node_id": "risque_faible_confiance", "node_type": "RisqueAdministratif", "label": "Faible confiance", "description": "Niveau de confiance insuffisant.", "tags": ["risque", "confiance"]},
+    {"node_id": "risque_rejet_potentiel", "node_type": "RisqueAdministratif", "label": "Rejet potentiel", "description": "Risque de décision de rejet.", "tags": ["risque", "rejet"]},
+
+    {"node_id": "modele_reponse_complement", "node_type": "ModeleReponse", "label": "Modèle de réponse de complément", "description": "Modèle de notification de demande de complément.", "tags": ["modele", "complement"]},
+    {"node_id": "modele_reponse_favorable", "node_type": "ModeleReponse", "label": "Modèle de réponse favorable", "description": "Modèle de notification de décision favorable.", "tags": ["modele", "favorable"]},
+    {"node_id": "modele_reponse_refus", "node_type": "ModeleReponse", "label": "Modèle de réponse de refus", "description": "Modèle de notification de refus.", "tags": ["modele", "refus"]},
+    {"node_id": "modele_reponse_recours", "node_type": "ModeleReponse", "label": "Modèle de réponse de recours", "description": "Modèle de notification de recours.", "tags": ["modele", "recours"]},
+
+    {"node_id": "type_tpe", "node_type": "TypeEntreprise", "label": "TPE", "description": "Très Petite Entreprise, moins de 10 salariés.", "tags": ["type", "tpe"]},
+    {"node_id": "type_pme", "node_type": "TypeEntreprise", "label": "PME", "description": "Petite et Moyenne Entreprise, 10 à 250 salariés.", "tags": ["type", "pme"]},
+
+    {"node_id": "secteur_commerce", "node_type": "SecteurActivite", "label": "Commerce", "description": "Secteur d'activité commerciale.", "tags": ["secteur", "commerce"]},
+    {"node_id": "secteur_services", "node_type": "SecteurActivite", "label": "Services", "description": "Secteur des services.", "tags": ["secteur", "services"]},
+    {"node_id": "secteur_artisanat", "node_type": "SecteurActivite", "label": "Artisanat", "description": "Secteur de l'artisanat.", "tags": ["secteur", "artisanat"]},
+    {"node_id": "secteur_industrie", "node_type": "SecteurActivite", "label": "Industrie", "description": "Secteur industriel.", "tags": ["secteur", "industrie"]},
+
+    {"node_id": "preuve_attestation_fiscale", "node_type": "PreuveAttendue", "label": "Preuve: Attestation fiscale", "description": "Preuve attendue pour la situation fiscale vérifiable.", "tags": ["preuve", "fiscal"]},
+    {"node_id": "preuve_registre_commerce", "node_type": "PreuveAttendue", "label": "Preuve: Registre de commerce", "description": "Preuve attendue pour l'entreprise déclarée.", "tags": ["preuve", "rc"]},
+    {"node_id": "preuve_bail_local", "node_type": "PreuveAttendue", "label": "Preuve: Bail ou titre du local", "description": "Preuve attendue pour la conformité du local.", "tags": ["preuve", "local"]},
+
+    {"node_id": "regle_instruction_standard", "node_type": "RegleInstruction", "label": "Règle d'instruction standard", "description": "Règle standard d'instruction des dossiers TPE/PME.", "tags": ["regle", "instruction"]},
+    {"node_id": "regle_hitl_orange_pieces", "node_type": "RegleInstruction", "label": "Règle HITL ORANGE: pièces manquantes", "description": "Si pieces_manquantes non vide, HITL au minimum ORANGE.", "tags": ["regle", "hitl"]},
+    {"node_id": "regle_hitl_rouge_fraude", "node_type": "RegleInstruction", "label": "Règle HITL ROUGE: suspicion fraude", "description": "Si suspicion_fraude dans risques, HITL ROUGE.", "tags": ["regle", "hitl"]},
+
+    {"node_id": "exception_secteur_non_eligible", "node_type": "Exception", "label": "Exception: secteur non éligible", "description": "Exception pour les secteurs non couverts par une aide.", "tags": ["exception"]},
+    {"node_id": "exception_delai_depasse", "node_type": "Exception", "label": "Exception: délai de recours dépassé", "description": "Exception pour les recours hors délai.", "tags": ["exception", "delai"]}
+  ],
+  "edges": [
+    {"edge_id": "e001", "source_node_id": "aide_digitalisation", "target_node_id": "registre_commerce", "relation_type": "exige", "description": "L'aide à la digitalisation exige un registre de commerce."},
+    {"edge_id": "e002", "source_node_id": "aide_digitalisation", "target_node_id": "attestation_fiscale", "relation_type": "exige", "description": "L'aide à la digitalisation exige une attestation fiscale."},
+    {"edge_id": "e003", "source_node_id": "aide_digitalisation", "target_node_id": "plan_digitalisation", "relation_type": "exige", "description": "L'aide à la digitalisation exige un plan de digitalisation."},
+    {"edge_id": "e004", "source_node_id": "aide_digitalisation", "target_node_id": "formulaire_demande", "relation_type": "exige", "description": "L'aide à la digitalisation exige un formulaire de demande."},
+    {"edge_id": "e005", "source_node_id": "aide_digitalisation", "target_node_id": "entreprise_declaree", "relation_type": "exige", "description": "L'aide à la digitalisation exige que l'entreprise soit déclarée."},
+    {"edge_id": "e006", "source_node_id": "aide_digitalisation", "target_node_id": "situation_fiscale_verifiable", "relation_type": "exige", "description": "L'aide à la digitalisation exige une situation fiscale vérifiable."},
+    {"edge_id": "e007", "source_node_id": "aide_digitalisation", "target_node_id": "activite_eligible", "relation_type": "exige", "description": "L'aide à la digitalisation exige une activité éligible."},
+    {"edge_id": "e008", "source_node_id": "aide_digitalisation", "target_node_id": "type_tpe", "relation_type": "concerne", "description": "L'aide à la digitalisation concerne les TPE."},
+    {"edge_id": "e009", "source_node_id": "aide_digitalisation", "target_node_id": "type_pme", "relation_type": "concerne", "description": "L'aide à la digitalisation concerne les PME."},
+    {"edge_id": "e010", "source_node_id": "aide_digitalisation", "target_node_id": "secteur_commerce", "relation_type": "applicable_a", "description": "L'aide à la digitalisation est applicable au commerce."},
+    {"edge_id": "e011", "source_node_id": "aide_digitalisation", "target_node_id": "secteur_services", "relation_type": "applicable_a", "description": "L'aide à la digitalisation est applicable aux services."},
+
+    {"edge_id": "e012", "source_node_id": "aide_investissement", "target_node_id": "bilan_financier", "relation_type": "exige", "description": "L'aide à l'investissement exige un bilan financier."},
+    {"edge_id": "e013", "source_node_id": "aide_investissement", "target_node_id": "plan_affaires", "relation_type": "exige", "description": "L'aide à l'investissement exige un plan d'affaires."},
+    {"edge_id": "e014", "source_node_id": "aide_investissement", "target_node_id": "devis_proforma", "relation_type": "exige", "description": "L'aide à l'investissement exige des devis pro forma."},
+    {"edge_id": "e015", "source_node_id": "aide_investissement", "target_node_id": "attestation_bancaire", "relation_type": "exige", "description": "L'aide à l'investissement exige une attestation bancaire."},
+    {"edge_id": "e016", "source_node_id": "aide_investissement", "target_node_id": "anciennete_12_mois", "relation_type": "exige", "description": "L'aide à l'investissement exige 12 mois d'ancienneté."},
+    {"edge_id": "e017", "source_node_id": "aide_investissement", "target_node_id": "apport_personnel_minimum", "relation_type": "exige", "description": "L'aide à l'investissement exige un apport personnel minimum."},
+
+    {"edge_id": "e018", "source_node_id": "aide_formalisation", "target_node_id": "carte_identite_representant", "relation_type": "exige", "description": "L'aide à la formalisation exige une pièce d'identité."},
+    {"edge_id": "e019", "source_node_id": "aide_formalisation", "target_node_id": "formulaire_demande", "relation_type": "exige", "description": "L'aide à la formalisation exige un formulaire."},
+
+    {"edge_id": "e020", "source_node_id": "autorisation_activite_commerciale", "target_node_id": "registre_commerce", "relation_type": "exige", "description": "L'autorisation d'activité commerciale exige un registre de commerce."},
+    {"edge_id": "e021", "source_node_id": "autorisation_activite_commerciale", "target_node_id": "justificatif_local", "relation_type": "exige", "description": "L'autorisation d'activité commerciale exige un justificatif de local."},
+    {"edge_id": "e022", "source_node_id": "autorisation_activite_commerciale", "target_node_id": "plan_amenagement", "relation_type": "exige", "description": "L'autorisation d'activité commerciale exige un plan d'aménagement."},
+    {"edge_id": "e023", "source_node_id": "autorisation_activite_commerciale", "target_node_id": "service_commerce", "relation_type": "releve_de", "description": "L'autorisation d'activité commerciale relève du service du commerce."},
+    {"edge_id": "e024", "source_node_id": "autorisation_activite_commerciale", "target_node_id": "conformite_local", "relation_type": "exige", "description": "L'autorisation d'activité commerciale exige la conformité du local."},
+
+    {"edge_id": "e025", "source_node_id": "autorisation_ouverture", "target_node_id": "autorisation_activite_commerciale", "relation_type": "exige", "description": "L'autorisation d'ouverture exige une autorisation d'activité."},
+    {"edge_id": "e026", "source_node_id": "autorisation_ouverture", "target_node_id": "rapport_conformite", "relation_type": "exige", "description": "L'autorisation d'ouverture exige un rapport de conformité."},
+    {"edge_id": "e027", "source_node_id": "autorisation_ouverture", "target_node_id": "attestation_assurance", "relation_type": "exige", "description": "L'autorisation d'ouverture exige une attestation d'assurance."},
+
+    {"edge_id": "e028", "source_node_id": "autorisation_local", "target_node_id": "justificatif_local", "relation_type": "exige", "description": "L'autorisation liée à un local exige un justificatif de local."},
+    {"edge_id": "e029", "source_node_id": "autorisation_local", "target_node_id": "local_exploitable", "relation_type": "exige", "description": "L'autorisation liée à un local exige un local exploitable."},
+
+    {"edge_id": "e030", "source_node_id": "renouvellement_autorisation", "target_node_id": "autorisation_activite_commerciale", "relation_type": "exige", "description": "Le renouvellement exige l'autorisation précédente."},
+
+    {"edge_id": "e031", "source_node_id": "recours_apres_refus", "target_node_id": "decision_refus", "relation_type": "conteste", "description": "Le recours après refus conteste la décision de refus."},
+    {"edge_id": "e032", "source_node_id": "recours_apres_refus", "target_node_id": "notification_refus", "relation_type": "exige", "description": "Le recours après refus exige la notification de refus."},
+    {"edge_id": "e033", "source_node_id": "recours_apres_refus", "target_node_id": "lettre_recours", "relation_type": "exige", "description": "Le recours après refus exige une lettre de recours."},
+    {"edge_id": "e034", "source_node_id": "recours_apres_refus", "target_node_id": "delai_recours_respecte", "relation_type": "exige", "description": "Le recours après refus exige le respect du délai de recours."},
+    {"edge_id": "e035", "source_node_id": "recours_apres_refus", "target_node_id": "service_recours", "relation_type": "releve_de", "description": "Le recours après refus relève du service des recours."},
+
+    {"edge_id": "e036", "source_node_id": "recours_incomplet", "target_node_id": "notification_incompletude", "relation_type": "exige", "description": "Le recours après incomplétude exige la notification d'incomplétude."},
+    {"edge_id": "e037", "source_node_id": "recours_contre_decision", "target_node_id": "decision_refus", "relation_type": "conteste", "description": "Le recours contre décision conteste la décision."},
+    {"edge_id": "e038", "source_node_id": "contestation_motif_rejet", "target_node_id": "decision_refus", "relation_type": "conteste", "description": "La contestation de motif conteste la décision de rejet."},
+
+    {"edge_id": "e039", "source_node_id": "decision_refus", "target_node_id": "motif_ineligibilite", "relation_type": "motivee_par", "description": "Le refus peut être motivé par l'inéligibilité."},
+    {"edge_id": "e040", "source_node_id": "decision_refus", "target_node_id": "motif_incompletude", "relation_type": "motivee_par", "description": "Le refus peut être motivé par l'incomplétude."},
+    {"edge_id": "e041", "source_node_id": "decision_refus", "target_node_id": "motif_non_conformite_local", "relation_type": "motivee_par", "description": "Le refus peut être motivé par la non-conformité du local."},
+    {"edge_id": "e042", "source_node_id": "decision_refus", "target_node_id": "motif_fiscal_irregulier", "relation_type": "motivee_par", "description": "Le refus peut être motivé par une situation fiscale irrégulière."},
+    {"edge_id": "e043", "source_node_id": "decision_refus", "target_node_id": "motif_faux_documents", "relation_type": "motivee_par", "description": "Le refus peut être motivé par des faux documents."},
+    {"edge_id": "e044", "source_node_id": "decision_refus", "target_node_id": "motif_delai_depasse", "relation_type": "motivee_par", "description": "Le refus peut être motivé par le dépassement de délai."},
+
+    {"edge_id": "e045", "source_node_id": "motif_incompletude", "target_node_id": "action_demande_complement", "relation_type": "declenche", "description": "L'incomplétude déclenche une demande de complément."},
+    {"edge_id": "e046", "source_node_id": "motif_faux_documents", "target_node_id": "action_responsable_service", "relation_type": "declenche", "description": "Les faux documents déclenchent une validation par le responsable."},
+
+    {"edge_id": "e047", "source_node_id": "registre_commerce", "target_node_id": "entreprise_declaree", "relation_type": "prouve", "description": "Le registre de commerce prouve que l'entreprise est déclarée."},
+    {"edge_id": "e048", "source_node_id": "attestation_fiscale", "target_node_id": "situation_fiscale_verifiable", "relation_type": "prouve", "description": "L'attestation fiscale prouve la situation fiscale vérifiable."},
+    {"edge_id": "e049", "source_node_id": "justificatif_local", "target_node_id": "local_exploitable", "relation_type": "prouve", "description": "Le justificatif de local prouve que le local est exploitable."},
+
+    {"edge_id": "e050", "source_node_id": "entreprise_declaree", "target_node_id": "preuve_registre_commerce", "relation_type": "verifiee_par", "description": "L'entreprise déclarée est vérifiée par le registre de commerce."},
+    {"edge_id": "e051", "source_node_id": "situation_fiscale_verifiable", "target_node_id": "preuve_attestation_fiscale", "relation_type": "verifiee_par", "description": "La situation fiscale est vérifiée par l'attestation fiscale."},
+    {"edge_id": "e052", "source_node_id": "conformite_local", "target_node_id": "preuve_bail_local", "relation_type": "verifiee_par", "description": "La conformité du local est vérifiée par le bail ou titre."},
+
+    {"edge_id": "e053", "source_node_id": "action_demande_complement", "target_node_id": "modele_reponse_complement", "relation_type": "necessite", "description": "La demande de complément nécessite le modèle de réponse de complément."},
+    {"edge_id": "e054", "source_node_id": "decision_favorable", "target_node_id": "modele_reponse_favorable", "relation_type": "necessite", "description": "La décision favorable nécessite le modèle de réponse favorable."},
+    {"edge_id": "e055", "source_node_id": "decision_refus", "target_node_id": "modele_reponse_refus", "relation_type": "necessite", "description": "La décision de refus nécessite le modèle de réponse de refus."},
+    {"edge_id": "e056", "source_node_id": "recours_apres_refus", "target_node_id": "modele_reponse_recours", "relation_type": "necessite", "description": "Le recours nécessite le modèle de réponse de recours."},
+
+    {"edge_id": "e057", "source_node_id": "risque_fraude", "target_node_id": "hitl_rouge", "relation_type": "declenche", "description": "La suspicion de fraude déclenche le HITL ROUGE."},
+    {"edge_id": "e058", "source_node_id": "risque_incoherence_documentaire", "target_node_id": "hitl_orange", "relation_type": "declenche", "description": "L'incohérence documentaire déclenche le HITL ORANGE."},
+    {"edge_id": "e059", "source_node_id": "risque_faible_confiance", "target_node_id": "hitl_orange", "relation_type": "declenche", "description": "La faible confiance déclenche le HITL ORANGE."},
+    {"edge_id": "e060", "source_node_id": "risque_rejet_potentiel", "target_node_id": "hitl_rouge", "relation_type": "declenche", "description": "Le rejet potentiel déclenche le HITL ROUGE."},
+
+    {"edge_id": "e061", "source_node_id": "hitl_orange", "target_node_id": "action_validation_agent_senior", "relation_type": "necessite", "description": "Le HITL ORANGE nécessite une validation par agent senior."},
+    {"edge_id": "e062", "source_node_id": "hitl_rouge", "target_node_id": "action_responsable_service", "relation_type": "necessite", "description": "Le HITL ROUGE nécessite une validation par le responsable de service."},
+
+    {"edge_id": "e063", "source_node_id": "recours_apres_refus", "target_node_id": "hitl_orange", "relation_type": "necessite", "description": "Le recours après refus nécessite au minimum un HITL ORANGE."},
+    {"edge_id": "e064", "source_node_id": "recours_incomplet", "target_node_id": "hitl_orange", "relation_type": "necessite", "description": "Le recours après incomplétude nécessite au minimum un HITL ORANGE."},
+    {"edge_id": "e065", "source_node_id": "recours_contre_decision", "target_node_id": "hitl_orange", "relation_type": "necessite", "description": "Le recours contre décision nécessite au minimum un HITL ORANGE."},
+    {"edge_id": "e066", "source_node_id": "contestation_motif_rejet", "target_node_id": "hitl_orange", "relation_type": "necessite", "description": "La contestation de motif nécessite au minimum un HITL ORANGE."},
+
+    {"edge_id": "e067", "source_node_id": "regle_hitl_orange_pieces", "target_node_id": "hitl_orange", "relation_type": "declenche", "description": "La règle pièces manquantes déclenche le HITL ORANGE."},
+    {"edge_id": "e068", "source_node_id": "regle_hitl_rouge_fraude", "target_node_id": "hitl_rouge", "relation_type": "declenche", "description": "La règle suspicion fraude déclenche le HITL ROUGE."},
+
+    {"edge_id": "e069", "source_node_id": "aide_digitalisation", "target_node_id": "service_aides_economiques", "relation_type": "releve_de", "description": "L'aide à la digitalisation relève du service des aides économiques."},
+    {"edge_id": "e070", "source_node_id": "aide_investissement", "target_node_id": "service_aides_economiques", "relation_type": "releve_de", "description": "L'aide à l'investissement relève du service des aides économiques."},
+
+    {"edge_id": "e071", "source_node_id": "exception_secteur_non_eligible", "target_node_id": "activite_eligible", "relation_type": "conteste", "description": "L'exception secteur non éligible conteste l'éligibilité de l'activité."},
+    {"edge_id": "e072", "source_node_id": "exception_delai_depasse", "target_node_id": "delai_recours_respecte", "relation_type": "conteste", "description": "L'exception délai dépassé conteste le respect du délai."},
+
+    {"edge_id": "e073", "source_node_id": "decision_complement", "target_node_id": "motif_incompletude", "relation_type": "motivee_par", "description": "La demande de complément est motivée par l'incomplétude."},
+    {"edge_id": "e074", "source_node_id": "decision_complement", "target_node_id": "action_demande_complement", "relation_type": "declenche", "description": "La décision de complément déclenche l'action de demande de complément."},
+
+    {"edge_id": "e075", "source_node_id": "secteur_artisanat", "target_node_id": "aide_formalisation", "relation_type": "applicable_a", "description": "L'artisanat est un secteur applicable à l'aide à la formalisation."},
+    {"edge_id": "e076", "source_node_id": "secteur_commerce", "target_node_id": "autorisation_activite_commerciale", "relation_type": "applicable_a", "description": "Le commerce est un secteur applicable à l'autorisation d'activité commerciale."}
+  ]
+}

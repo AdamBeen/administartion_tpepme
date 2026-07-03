@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdminTPE GraphRAG — Copilote d'instruction administrative</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <rect width="32" height="32" rx="8" fill="#6B4226"/>
+                            <path d="M8 22L16 10L24 22" stroke="#F5F0E8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="16" cy="16" r="3" fill="#E8DCC8"/>
+                        </svg>
+                        <div class="logo-text">
+                            <h1>AdminTPE GraphRAG</h1>
+                            <span class="subtitle">Copilote d'instruction administrative TPE/PME</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <span class="badge badge-warning">V1 non sécurisée</span>
+                    <button id="debug-toggle" class="btn btn-ghost btn-sm">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L1 8L8 15L15 8L8 1Z" stroke="currentColor" stroke-width="1.5"/></svg>
+                        Debug
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main class="main">
+            <!-- Input section -->
+            <section class="card card-input">
+                <div class="card-header">
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L2 7V18H7V12H13V18H18V7L10 2Z" stroke="#6B4226" stroke-width="1.5"/></svg>
+                        Nouvelle analyse
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <!-- Question -->
+                    <div class="form-group">
+                        <label for="question">Question de l'administrateur</label>
+                        <textarea id="question" rows="3" placeholder="Analyse ce dossier et indique l'éligibilité, les pièces manquantes, les incohérences et le niveau HITL."></textarea>
+                    </div>
+
+                    <!-- Type + ID -->
+                    <div class="form-row">
+                        <div class="form-group form-group-sm">
+                            <label for="type-dossier">Type de dossier</label>
+                            <select id="type-dossier">
+                                <option value="inconnu">Inconnu / à classifier</option>
+                                <option value="aide">Aide</option>
+                                <option value="autorisation">Autorisation</option>
+                                <option value="recours">Recours</option>
+                            </select>
+                        </div>
+                        <div class="form-group form-group-sm">
+                            <label for="identifiant-dossier">Identifiant dossier (optionnel)</label>
+                            <input type="text" id="identifiant-dossier" placeholder="Nom société ou référence interne">
+                        </div>
+                    </div>
+
+                    <!-- Upload -->
+                    <div class="form-group">
+                        <label>Dossier client</label>
+                        <div id="dropzone" class="dropzone">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                <path d="M24 32V8M24 8L16 16M24 8L32 16" stroke="#A0785A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M8 32V40H40V32" stroke="#A0785A" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <p>Glissez vos fichiers ici ou <span class="link">cliquez pour parcourir</span></p>
+                            <p class="dropzone-hint">PDF, CSV, XLS, XLSX, TXT, MD — Max 20 Mo / fichier</p>
+                            <input type="file" id="file-input" multiple accept=".pdf,.csv,.xls,.xlsx,.txt,.md" hidden>
+                        </div>
+                        <div id="file-list" class="file-list"></div>
+                    </div>
+
+                    <!-- Analyze button -->
+                    <button id="analyze-btn" class="btn btn-primary btn-lg" disabled>
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1V17M1 9H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        Analyser le dossier
+                    </button>
+                </div>
+            </section>
+
+            <!-- Loading section -->
+            <section id="loading-section" class="card card-loading hidden">
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <h3>Analyse en cours...</h3>
+                    <p class="loading-status" id="loading-status">Initialisation du workflow</p>
+                    <div class="loading-steps" id="loading-steps"></div>
+                </div>
+            </section>
+
+            <!-- Error section -->
+            <section id="error-section" class="card card-error hidden">
+                <div class="error-container">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="#C0392B" stroke-width="2"/><path d="M24 14V28M24 32V34" stroke="#C0392B" stroke-width="2.5" stroke-linecap="round"/></svg>
+                    <h3>Une erreur est survenue</h3>
+                    <p id="error-message"></p>
+                    <p id="error-suggestion" class="error-suggestion"></p>
+                </div>
+            </section>
+
+            <!-- Results section -->
+            <section id="results-section" class="hidden">
+                <!-- Run ID bar -->
+                <div class="run-id-bar">
+                    <span class="run-id-label">Run ID:</span>
+                    <code id="run-id"></code>
+                    <span class="run-duration" id="run-duration"></span>
+                </div>
+
+                <!-- HITL badge -->
+                <div id="hitl-badge-container" class="hitl-badge-container"></div>
+
+                <!-- Résumé dossier -->
+                <div class="card card-result" id="card-resume">
+                    <div class="card-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="#6B4226" stroke-width="1.5"/><path d="M7 8H13M7 12H11" stroke="#6B4226" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            Résumé du dossier
+                        </h2>
+                    </div>
+                    <div class="card-body" id="resume-content"></div>
+                </div>
+
+                <!-- Type demande -->
+                <div class="card card-result" id="card-type">
+                    <div class="card-body" id="type-content"></div>
+                </div>
+
+                <!-- Pièces manquantes -->
+                <div class="card card-result card-warning hidden" id="card-pieces-manquantes">
+                    <div class="card-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L18 17H2L10 2Z" stroke="#C0392B" stroke-width="1.5"/><path d="M10 8V12M10 15V15.5" stroke="#C0392B" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            Pièces manquantes
+                        </h2>
+                    </div>
+                    <div class="card-body" id="pieces-manquantes-content"></div>
+                </div>
+
+                <!-- Incohérences -->
+                <div class="card card-result card-orange hidden" id="card-incoherences">
+                    <div class="card-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#E67E22" stroke-width="1.5"/><path d="M10 6V11M10 14V14.5" stroke="#E67E22" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            Incohérences détectées
+                        </h2>
+                    </div>
+                    <div class="card-body" id="incoherences-content"></div>
+                </div>
+
+                <!-- Conditions -->
+                <div class="card card-result" id="card-conditions">
+                    <div class="card-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 10L9 14L15 6" stroke="#6B4226" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            Conditions d'éligibilité
+                        </h2>
+                    </div>
+                    <div class="card-body" id="conditions-content"></div>
+                </div>
+
+                <!-- RAG Vectoriel -->
+                <div class="card card-result" id="card-rag">
+                    <div class="card-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="#6B4226" stroke-width="1.5"/><path d="M10 3V10L15 12" stroke="#6B4226" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            Résultats RAG vectoriel
+                        </h2>
+                    </div>
+                    <div class="card-body" id="rag-content"></div>
+                </div>
+
+                <!-- GraphRAG -->
+                <div class="card card-result" id="card-graphrag">
+                    <div class="card-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="5" cy="5" r="2.5" stroke="#6B4226" stroke-width="1.5"/><circle cx="15" cy="5" r="2.5" stroke="#6B4226" stroke-width="1.5"/><circle cx="10" cy="15" r="2.5" stroke="#6B4226" stroke-width="1.5"/><path d="M7 6L13 6M6 7L9 13M14 7L11 13" stroke="#6B4226" stroke-width="1.2"/></svg>
+                            Résultats GraphRAG — Chemins multi-hop
+                        </h2>
+                    </div>
+                    <div class="card-body" id="graphrag-content"></div>
+                </div>
+
+                <!-- Recommandation -->
+                <div class="card card-result" id="card-recommandation">
+                    <div class="card-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L12 8H18L13 12L15 18L10 14L5 18L7 12L2 8H8L10 2Z" stroke="#6B4226" stroke-width="1.3"/></svg>
+                            Recommandation
+                        </h2>
+                    </div>
+                    <div class="card-body" id="recommandation-content"></div>
+                </div>
+
+                <!-- Réponse proposée -->
+                <div class="card card-result card-highlight" id="card-reponse">
+                    <div class="card-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5H17V13H10L6 17V13H3V5Z" stroke="#6B4226" stroke-width="1.5"/></svg>
+                            Réponse administrative proposée
+                        </h2>
+                    </div>
+                    <div class="card-body" id="reponse-content"></div>
+                </div>
+
+                <!-- Debug section -->
+                <div id="debug-section" class="hidden">
+                    <div class="card card-result" id="card-debug-queries">
+                        <div class="card-header">
+                            <h2>🔍 Requêtes internes</h2>
+                        </div>
+                        <div class="card-body" id="debug-queries-content"></div>
+                    </div>
+
+                    <div class="card card-result" id="card-debug-vulnerabilities">
+                        <div class="card-header">
+                            <h2>⚠️ Vulnérabilités V1 connues</h2>
+                        </div>
+                        <div class="card-body" id="debug-vulnerabilities-content"></div>
+                    </div>
+                </div>
+
+                <!-- JSON brut -->
+                <div class="card card-result" id="card-json">
+                    <div class="card-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 4L3 10L7 16M13 4L17 10L13 16" stroke="#6B4226" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            JSON brut
+                        </h2>
+                        <button id="copy-json-btn" class="btn btn-ghost btn-sm">Copier</button>
+                    </div>
+                    <div class="card-body">
+                        <pre id="json-viewer" class="json-viewer"></pre>
+                    </div>
+                </div>
+
+                <!-- Error logging timeline -->
+                <div class="card card-result" id="card-timeline">
+                    <div class="card-header">
+                        <h2>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#6B4226" stroke-width="1.5"/><path d="M10 5V10L13 12" stroke="#6B4226" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            Timeline d'exécution
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="timeline-content" class="timeline"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>AdminTPE GraphRAG V1 — <strong>Version non sécurisée</strong> — Ne pas utiliser en production</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/components.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

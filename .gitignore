@@ -1,0 +1,36 @@
+# Environment variables — ne jamais committer
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Obsidian export
+obsidian_vault/
+
+# Logs
+*.log
+
+# Data files (garder les fichiers source dans contexte_rag_vectoriel et contexte_graphrag)
+# mais exclure les exports générés
+backend/data/*.bin
