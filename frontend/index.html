@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <span class="badge badge-warning">V1 non sécurisée</span>
+                    <span id="active-security-badge" class="badge badge-warning">Mode: Unsecured</span>
                     <button id="debug-toggle" class="btn btn-ghost btn-sm">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L1 8L8 15L15 8L8 1Z" stroke="currentColor" stroke-width="1.5"/></svg>
                         Debug
@@ -90,6 +90,35 @@
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1V17M1 9H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                         Analyser le dossier
                     </button>
+                </div>
+            </section>
+
+            <section class="card card-security">
+                <div class="card-header">
+                    <h2>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L16 5V10C16 13.5 13.5 16.5 10 18C6.5 16.5 4 13.5 4 10V5L10 2Z" stroke="#6B4226" stroke-width="1.5"/><path d="M7 10L9 12L13 8" stroke="#6B4226" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Rapport sécurité
+                    </h2>
+                    <span id="security-status-pill" class="security-pill">Prêt</span>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Mode</label>
+                        <div class="segmented-control" id="security-mode">
+                            <button type="button" class="segment active" data-mode="unsecured">Non sécurisé</button>
+                            <button type="button" class="segment" data-mode="secured">Sécurisé</button>
+                        </div>
+                    </div>
+                    <p class="security-source-note">Utilise la question et les fichiers déposés dans Nouvelle analyse.</p>
+                    <div class="security-actions">
+                        <button id="security-run-btn" class="btn btn-primary">
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 3L14 9L4 15V3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                            Générer le rapport sécurité
+                        </button>
+                        <a id="security-download-json" class="btn btn-ghost hidden" href="#" download>JSON</a>
+                        <a id="security-download-md" class="btn btn-ghost hidden" href="#" download>Markdown</a>
+                    </div>
+                    <div id="security-report" class="security-report hidden"></div>
                 </div>
             </section>
 
@@ -192,15 +221,8 @@
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="5" cy="5" r="2.5" stroke="#6B4226" stroke-width="1.5"/><circle cx="15" cy="5" r="2.5" stroke="#6B4226" stroke-width="1.5"/><circle cx="10" cy="15" r="2.5" stroke="#6B4226" stroke-width="1.5"/><path d="M7 6L13 6M6 7L9 13M14 7L11 13" stroke="#6B4226" stroke-width="1.2"/></svg>
                             Résultats GraphRAG — Chemins multi-hop
                         </h2>
-                        <button id="obsidian-export-btn" class="btn btn-ghost btn-sm hidden">
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4H12V10H2V4Z" stroke="currentColor" stroke-width="1.2"/><path d="M5 7L7 9L9 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-                            Export Obsidian
-                        </button>
                     </div>
                     <div class="card-body" id="graphrag-content"></div>
-                    <div class="card-body" id="graphrag-viz-container" style="padding-top:0;">
-                        <div id="graphrag-viz" class="graph-viz-container hidden"></div>
-                    </div>
                 </div>
 
                 <!-- Recommandation -->
@@ -272,7 +294,7 @@
         </main>
 
         <footer class="footer">
-            <p>AdminTPE GraphRAG V1 — <strong>Version non sécurisée</strong> — Ne pas utiliser en production</p>
+            <p>AdminTPE GraphRAG — Analyse administrative avec contrôle sécurité configurable</p>
         </footer>
     </div>
 

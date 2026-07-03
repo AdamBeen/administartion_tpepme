@@ -31,6 +31,12 @@ obsidian_vault/
 # Logs
 *.log
 
+# Local security test outputs
+security_reports/
+security_runtime/
+local_tools/
+../local_tools/
+
 # Data files (garder les fichiers source dans contexte_rag_vectoriel et contexte_graphrag)
 # mais exclure les exports générés
 backend/data/*.bin

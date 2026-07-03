@@ -1,5 +1,8 @@
 let selectedFiles = [];
 let debugMode = false;
+let securityMode = 'unsecured';
+let isDossierAnalysisRunning = false;
+let isSecurityReportRunning = false;
 
 const WORKFLOW_STEPS = [
     'node_receive_input',
@@ -43,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAnalyzeButton();
     initDebugToggle();
     initCopyJson();
+    initSecurityPanel();
     updateAnalyzeButton();
 });
 
@@ -111,7 +115,20 @@ function renderFileList() {
 function updateAnalyzeButton() {
     const btn = document.getElementById('analyze-btn');
     const question = document.getElementById('question').value.trim();
-    btn.disabled = !question && selectedFiles.length === 0;
+    btn.disabled = isDossierAnalysisRunning || isSecurityReportRunning || (!question && selectedFiles.length === 0);
+}
+
+function updateBusyControls() {
+    const busy = isDossierAnalysisRunning || isSecurityReportRunning;
+    document.querySelectorAll('#security-mode .segment').forEach(btn => {
+        btn.disabled = busy;
+        btn.classList.toggle('disabled', busy);
+    });
+
+    const securityRunBtn = document.getElementById('security-run-btn');
+    if (securityRunBtn) securityRunBtn.disabled = busy;
+
+    updateAnalyzeButton();
 }
 
 document.getElementById('question').addEventListener('input', updateAnalyzeButton);
@@ -139,23 +156,123 @@ function initCopyJson() {
     });
 }
 
+function initSecurityPanel() {
+    document.querySelectorAll('#security-mode .segment').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (isDossierAnalysisRunning || isSecurityReportRunning) {
+                showToast('Attendez la fin de l’analyse en cours.', 'warning');
+                return;
+            }
+            securityMode = btn.dataset.mode;
+            document.querySelectorAll('#security-mode .segment').forEach(item => item.classList.remove('active'));
+            btn.classList.add('active');
+            updateSecurityBadge();
+        });
+    });
+
+    const runBtn = document.getElementById('security-run-btn');
+    if (runBtn) {
+        runBtn.addEventListener('click', runSecurityTest);
+    }
+
+    updateSecurityBadge();
+}
+
+function updateSecurityBadge() {
+    const badge = document.getElementById('active-security-badge');
+    if (!badge) return;
+    badge.textContent = `Mode: ${securityMode === 'secured' ? 'Sécurisé' : 'Non sécurisé'}`;
+    badge.classList.toggle('badge-green', securityMode === 'secured');
+    badge.classList.toggle('badge-warning', securityMode !== 'secured');
+}
+
+async function runSecurityTest() {
+    if (isDossierAnalysisRunning || isSecurityReportRunning) {
+        showToast('Une analyse est déjà en cours.', 'warning');
+        return;
+    }
+
+    const runBtn = document.getElementById('security-run-btn');
+    const statusPill = document.getElementById('security-status-pill');
+    const reportBox = document.getElementById('security-report');
+    const question = document.getElementById('question').value.trim();
+    const jsonLink = document.getElementById('security-download-json');
+    const mdLink = document.getElementById('security-download-md');
+
+    isSecurityReportRunning = true;
+    updateBusyControls();
+    statusPill.textContent = 'Analyse';
+    statusPill.className = 'security-pill running';
+    reportBox.classList.add('hidden');
+    jsonLink.classList.add('hidden');
+    mdLink.classList.add('hidden');
+
+    try {
+        if (!question && selectedFiles.length === 0) {
+            throw new Error('Ajoutez une question ou déposez au moins un fichier.');
+        }
+        const report = await runSecurityReport(securityMode, question, selectedFiles);
+        reportBox.innerHTML = renderSecurityReport(report);
+        reportBox.classList.remove('hidden');
+        statusPill.textContent = securityStatusLabel(report.summary?.level || 'done');
+        statusPill.className = `security-pill ${report.summary?.level || 'done'}`;
+
+        if (report.downloads?.json) {
+            jsonLink.href = report.downloads.json;
+            jsonLink.classList.remove('hidden');
+        }
+        if (report.downloads?.markdown) {
+            mdLink.href = report.downloads.markdown;
+            mdLink.classList.remove('hidden');
+        }
+    } catch (error) {
+        statusPill.textContent = 'Erreur';
+        statusPill.className = 'security-pill error';
+        showToast(error.message, 'error');
+    } finally {
+        isSecurityReportRunning = false;
+        updateBusyControls();
+    }
+}
+
+function securityStatusLabel(level) {
+    const labels = {
+        low: 'Faible',
+        medium: 'Moyen',
+        high: 'Élevé',
+        controlled: 'Contrôlé',
+        done: 'Terminé',
+    };
+    return labels[level] || level;
+}
+
 async function runAnalysis() {
+    if (isDossierAnalysisRunning || isSecurityReportRunning) {
+        showToast('Une analyse est déjà en cours.', 'warning');
+        return;
+    }
+
     const question = document.getElementById('question').value.trim();
     const typeDossier = document.getElementById('type-dossier').value;
     const identifiantDossier = document.getElementById('identifiant-dossier').value;
 
     if (!question && selectedFiles.length === 0) return;
 
+    isDossierAnalysisRunning = true;
+    updateBusyControls();
     showLoading();
     renderLoadingSteps();
 
     try {
-        const result = await analyzeDossier(question, typeDossier, identifiantDossier, selectedFiles);
+        const result = await analyzeDossier(question, typeDossier, identifiantDossier, selectedFiles, securityMode);
         hideLoading();
         renderResults(result);
     } catch (error) {
         hideLoading();
         showError(error.message, 'Vérifiez que le backend est démarré et accessible.');
+    } finally {
+        isDossierAnalysisRunning = false;
+        updateBusyControls();
     }
 }
 
@@ -168,7 +285,7 @@ function showLoading() {
 
 function hideLoading() {
     document.getElementById('loading-section').classList.add('hidden');
-    document.getElementById('analyze-btn').disabled = false;
+    updateAnalyzeButton();
 }
 
 function renderLoadingSteps() {
@@ -245,20 +362,6 @@ function renderResults(result) {
 
     document.getElementById('rag-content').innerHTML = renderRAGResults(cleaned.resultats_rag_vectoriel || finalJson.resultats_rag_vectoriel);
     document.getElementById('graphrag-content').innerHTML = renderGraphRAGPaths(cleaned.resultats_graphrag || finalJson.resultats_graphrag);
-
-    const graphPaths = cleaned.resultats_graphrag || finalJson.resultats_graphrag || [];
-    const vizContainer = document.getElementById('graphrag-viz');
-    const obsidianBtn = document.getElementById('obsidian-export-btn');
-    if (graphPaths && graphPaths.length > 0) {
-        vizContainer.innerHTML = renderGraphViz(graphPaths);
-        vizContainer.classList.remove('hidden');
-        obsidianBtn.classList.remove('hidden');
-        obsidianBtn.onclick = () => exportToObsidian(result.run_id, graphPaths);
-    } else {
-        vizContainer.classList.add('hidden');
-        obsidianBtn.classList.add('hidden');
-    }
-
     document.getElementById('recommandation-content').innerHTML = renderRecommandation(cleaned.recommandation || finalJson.recommandation);
 
     const reponseText = cleaned.reponse_proposee || finalJson.reponse_proposee_a_l_administrateur || '';
@@ -273,35 +376,4 @@ function renderResults(result) {
     document.getElementById('timeline-content').innerHTML = renderTimeline(traces);
 
     section.scrollIntoView({ behavior: 'smooth' });
-}
-
-async function exportToObsidian(runId, graphPaths) {
-    const btn = document.getElementById('obsidian-export-btn');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = 'Export en cours...';
-    btn.disabled = true;
-
-    try {
-        const resp = await fetch('/api/kg/export-run-obsidian', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ run_id: runId, graph_paths: graphPaths }),
-        });
-        const data = await resp.json();
-        if (resp.ok) {
-            btn.innerHTML = '✓ Exporté vers Obsidian';
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }, 3000);
-        } else {
-            throw new Error(data.detail || 'Export failed');
-        }
-    } catch (error) {
-        btn.innerHTML = '✗ Erreur export';
-        setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }, 3000);
-    }
 }

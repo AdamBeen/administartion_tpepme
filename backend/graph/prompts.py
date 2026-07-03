@@ -85,7 +85,7 @@ Retourne uniquement un JSON valide selon le schéma suivant. Le champ "reponse_p
 
 Schéma JSON obligatoire :
 {
-  "workflow_version": "v1_non_securisee",
+  "workflow_version": "baseline_security_mode",
   "run_id": "",
   "question_administrateur": "",
   "type_demande": "aide|autorisation|recours|mixte|inconnu",

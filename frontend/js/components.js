@@ -14,6 +14,253 @@ function renderHITLBadge(hitl) {
     `;
 }
 
+function renderSecurityReport(report) {
+    const summary = report.summary || {};
+    const guardrail = report.guardrail || {};
+    const findings = report.static_findings || [];
+    const evidence = report.evidence || [];
+    const skillspector = report.skillspector || {};
+    const scanReport = report.skillspector_report || {};
+    const realSkillSpector = skillspector.report || {};
+    const skillRisk = realSkillSpector.risk_assessment || {};
+    const skillIssues = realSkillSpector.issues || [];
+    const skillComponents = realSkillSpector.components || [];
+    const garak = report.garak || {};
+    const isSecured = report.mode === 'secured';
+    const threatLevel = getHumanThreatLevel(summary, skillRisk, findings, guardrail);
+    const protectionState = getProtectionState(isSecured, guardrail);
+    const scannerState = getScannerState(skillRisk, skillIssues, threatLevel.score);
+    const riskClass = threatLevel.className;
+
+    let findingsHtml = '<p class="result-value">Aucune instruction suspecte détectée dans le texte extrait.</p>';
+    if (findings.length > 0) {
+        findingsHtml = '<ul class="result-list">';
+        for (const item of findings) {
+            findingsHtml += `<li><strong>${escapeHtml(humanRuleName(item.rule_id || ''))}</strong><br>${escapeHtml(item.message || '')}</li>`;
+        }
+        findingsHtml += '</ul>';
+    }
+
+    return `
+        <div class="security-hero ${riskClass}">
+            <div>
+                <span class="result-label">Risque du document</span>
+                <h3>${escapeHtml(threatLevel.title)}</h3>
+                <p>${escapeHtml(threatLevel.message)}</p>
+            </div>
+            <div class="security-score-ring">
+                <strong>${escapeHtml(String(threatLevel.score))}</strong>
+                <span>/100</span>
+            </div>
+        </div>
+        <div class="security-summary-row">
+            <div class="security-metric ${riskClass}">
+                <span>Risque document</span>
+                <strong>${escapeHtml(threatLevel.short)}</strong>
+            </div>
+            <div class="security-metric ${protectionState.className}">
+                <span>Protection</span>
+                <strong>${escapeHtml(protectionState.title)}</strong>
+            </div>
+            <div class="security-metric">
+                <span>Action</span>
+                <strong>${escapeHtml(protectionState.action)}</strong>
+            </div>
+            <div class="security-metric">
+                <span>SkillSpector</span>
+                <strong>${escapeHtml(scannerState.status)}</strong>
+            </div>
+            <div class="security-metric">
+                <span>Signaux</span>
+                <strong>${escapeHtml(String(skillIssues.length || findings.length || 0))}</strong>
+            </div>
+        </div>
+        <div class="security-bars">
+            <div>
+                <div class="bar-head"><span>Score de risque document</span><strong>${escapeHtml(String(threatLevel.score))}/100</strong></div>
+                <div class="threat-bar"><div class="${riskClass}" style="width:${Math.max(threatLevel.score, 4)}%"></div></div>
+            </div>
+            <div>
+                <div class="bar-head"><span>État de la protection</span><strong>${escapeHtml(protectionState.title)}</strong></div>
+                <div class="protection-strip ${protectionState.className}">${escapeHtml(protectionState.message)}</div>
+            </div>
+        </div>
+        <div class="result-section">
+            <div class="result-label">ID rapport</div>
+            <div class="result-value code-inline">${escapeHtml(report.report_id || '')}</div>
+        </div>
+        <div class="result-section">
+            <div class="result-label">Dossier</div>
+            <div class="result-value">${escapeHtml(report.case_id || 'manual_input')}</div>
+        </div>
+        <div class="result-section">
+            <div class="result-label">Verdict</div>
+            <div class="result-value bold">${escapeHtml(threatLevel.title)}</div>
+            <p>${escapeHtml(threatLevel.message)}</p>
+        </div>
+        <div class="result-section">
+            <div class="result-label">Signaux détectés</div>
+            ${findingsHtml}
+        </div>
+        <div class="result-section">
+            <div class="result-label">Extraits justificatifs</div>
+            ${renderSecurityEvidence(evidence)}
+        </div>
+        <div class="result-section">
+            <div class="result-label">Décision de protection</div>
+            <div class="result-value bold">${escapeHtml(protectionState.action)}</div>
+            <p>${escapeHtml(protectionState.message)}</p>
+        </div>
+        <div class="result-section">
+            <div class="result-label">Rapport SkillSpector</div>
+            ${renderSkillSpectorDetails(skillRisk, skillIssues, skillComponents, realSkillSpector)}
+        </div>
+        <div class="result-section">
+            <div class="result-label">Recommandation</div>
+            <p>${escapeHtml(scanReport.recommendation || protectionState.recommendation)}</p>
+        </div>
+    `;
+}
+
+function getHumanThreatLevel(summary, risk, findings, guardrail) {
+    const score = Number(risk.score ?? (findings.length ? 40 : 0));
+    if (guardrail?.blocked) {
+        return {
+            className: 'orange',
+            score: Math.max(score, 70),
+            short: 'Blocked',
+            title: 'Menace détectée et bloquée',
+            message: 'Le document contient des consignes qui tentent d influencer le modèle. Le mode sécurisé a arrêté la demande avant l analyse normale.'
+        };
+    }
+    if (score >= 70 || summary.level === 'high') {
+        return {
+            className: 'red',
+            score: Math.max(score, 80),
+            short: 'Élevé',
+            title: 'Document à risque élevé',
+            message: 'Le document contient des instructions suspectes capables de manipuler le modèle si elles sont traitées sans protection.'
+        };
+    }
+    if (score > 0 || findings.length > 0 || summary.level === 'medium') {
+        return {
+            className: 'orange',
+            score: Math.max(score, 50),
+            short: 'Suspect',
+            title: 'Contenu suspect détecté',
+            message: 'Le scan a trouvé des indicateurs de prompt injection. Utiliser le mode sécurisé avant l analyse normale.'
+        };
+    }
+    return {
+        className: 'green',
+        score: 0,
+        short: 'Propre',
+        title: 'Aucune instruction malveillante détectée',
+        message: 'Le texte extrait ne contient pas de motif connu de prompt injection ou d exfiltration.'
+    };
+}
+
+function getProtectionState(isSecured, guardrail) {
+    if (!isSecured) {
+        return {
+            className: 'orange',
+            title: 'Non appliquée',
+            action: 'Observation seule',
+            message: 'Le mode non sécurisé ne bloque rien. Il affiche seulement ce que le scanner observe.',
+            recommendation: 'Relancer le même dossier en mode sécurisé pour appliquer le blocage automatique.'
+        };
+    }
+    if (guardrail?.blocked) {
+        return {
+            className: 'green',
+            title: 'Active',
+            action: 'Bloqué',
+            message: 'Le mode sécurisé a bloqué le contenu suspect avant qu il influence l analyse.',
+            recommendation: 'Conserver le blocage et envoyer le dossier en revue manuelle.'
+        };
+    }
+    return {
+        className: 'green',
+        title: 'Active',
+        action: 'Autorisé',
+        message: 'Le mode sécurisé a contrôlé l entrée et l a autorisée car aucune règle bloquante n a été déclenchée.',
+        recommendation: 'Continuer l analyse normale du dossier.'
+    };
+}
+
+function getScannerState(risk, issues, threatScore) {
+    const score = Number(risk.score ?? threatScore ?? 0);
+    const severity = risk.severity || (score ? 'MEDIUM' : 'LOW');
+    const recommendation = risk.recommendation || (score ? 'CAUTION' : 'SAFE');
+    return {
+        score,
+        label: recommendation,
+        status: `${severity} / ${recommendation}`,
+    };
+}
+
+function humanRuleName(ruleId) {
+    const names = {
+        instruction_override: 'Tentative d annulation des règles',
+        system_instruction_block: 'Instruction cachée de type système',
+        policy_bypass: 'Tentative de contournement de politique',
+        system_prompt_request: 'Demande du prompt système',
+        secret_exfiltration: 'Tentative d extraction de secret',
+        tool_abuse: 'Tentative d abus d outil',
+        network_exfiltration: 'Tentative d exfiltration réseau',
+    };
+    return names[ruleId] || ruleId;
+}
+
+function renderSkillSpectorDetails(risk, issues, components, rawReport) {
+    if (!rawReport || Object.keys(rawReport).length === 0) {
+        return '<p class="result-value">SkillSpector n a pas retourné de rapport complet pour cette exécution.</p>';
+    }
+    let html = `
+        <div class="security-summary-row compact">
+            <div class="security-metric">
+                <span>Score scanner</span>
+                <strong>${escapeHtml(String(risk.score ?? '0'))}/100</strong>
+            </div>
+            <div class="security-metric">
+                <span>Sévérité scanner</span>
+                <strong>${escapeHtml(risk.severity || 'LOW')}</strong>
+            </div>
+            <div class="security-metric">
+                <span>Avis scanner</span>
+                <strong>${escapeHtml(risk.recommendation || 'SAFE')}</strong>
+            </div>
+            <div class="security-metric">
+                <span>Problèmes</span>
+                <strong>${escapeHtml(String(issues.length))}</strong>
+            </div>
+        </div>
+        <p>SkillSpector a scanné ${escapeHtml(components.length)} composant(s) généré(s): ${escapeHtml(components.map(c => c.path).join(', ') || 'aucun')}.</p>
+    `;
+    if (issues.length > 0) {
+        html += '<ul class="result-list">';
+        for (const issue of issues) {
+            html += `<li><strong>${escapeHtml(issue.severity || '')}</strong> - ${escapeHtml(issue.category || '')}: ${escapeHtml(issue.pattern || issue.finding || '')}<br>${escapeHtml(issue.explanation || '')}</li>`;
+        }
+        html += '</ul>';
+    } else {
+        html += '<p class="result-value">SkillSpector n a trouvé aucun motif dangereux dans le snapshot généré pour ce dossier.</p>';
+    }
+    return html;
+}
+
+function renderSecurityEvidence(evidence) {
+    if (!evidence || evidence.length === 0) {
+        return '<p class="result-value">Aucun extrait suspect extrait.</p>';
+    }
+    let html = '<ul class="result-list">';
+    for (const item of evidence) {
+        html += `<li><strong>${escapeHtml(item.rule_id || '')}</strong> - ${escapeHtml(item.snippet || '')}</li>`;
+    }
+    html += '</ul>';
+    return html;
+}
+
 function renderResumeDossier(dossier) {
     if (!dossier) return '<p class="result-value">Aucun résumé disponible.</p>';
     const fields = [
@@ -141,154 +388,6 @@ function renderGraphRAGPaths(paths) {
         `;
     }
     return html;
-}
-
-const NODE_TYPE_COLORS = {
-    'aide': '#27AE60',
-    'autorisation': '#8B5E3C',
-    'recours': '#E67E22',
-    'condition': '#3498DB',
-    'piecejustificative': '#9B59B6',
-    'niveauhitl': '#C0392B',
-    'procedure': '#1ABC9C',
-    'document': '#7F8C8D',
-    'default': '#A0785A',
-};
-
-function _getNodeColor(nodeLabel) {
-    const lower = (nodeLabel || '').toLowerCase();
-    for (const [key, color] of Object.entries(NODE_TYPE_COLORS)) {
-        if (key !== 'default' && lower.includes(key)) return color;
-    }
-    return NODE_TYPE_COLORS.default;
-}
-
-function renderGraphViz(paths) {
-    if (!paths || paths.length === 0) return '';
-
-    const nodes = [];
-    const nodeMap = {};
-    const edges = [];
-
-    for (const p of paths) {
-        const nodeLabels = (p.chemin || '').split(' -> ').map(s => s.trim());
-        const nodeIds = p.noeuds || [];
-        const relations = p.relations || [];
-
-        for (let i = 0; i < nodeLabels.length; i++) {
-            const label = nodeLabels[i];
-            const id = nodeIds[i] || label;
-            if (!nodeMap[id]) {
-                nodeMap[id] = { id, label, index: nodes.length };
-                nodes.push(nodeMap[id]);
-            }
-        }
-
-        for (let i = 0; i < nodeIds.length - 1; i++) {
-            const src = nodeIds[i] || nodeLabels[i];
-            const tgt = nodeIds[i + 1] || nodeLabels[i + 1];
-            const rel = relations[i] || '';
-            edges.push({ source: src, target: tgt, label: rel });
-        }
-    }
-
-    if (nodes.length === 0) return '';
-
-    const W = 700;
-    const H = Math.max(300, nodes.length * 60 + 40);
-    const centerX = W / 2;
-    const centerY = H / 2;
-
-    const positions = [];
-    if (nodes.length <= 4) {
-        const radius = Math.min(W, H) / 2 - 60;
-        for (let i = 0; i < nodes.length; i++) {
-            const angle = (i / nodes.length) * 2 * Math.PI - Math.PI / 2;
-            positions.push({
-                x: centerX + radius * Math.cos(angle),
-                y: centerY + radius * Math.sin(angle),
-            });
-        }
-    } else {
-        const cols = Math.ceil(Math.sqrt(nodes.length));
-        const rows = Math.ceil(nodes.length / cols);
-        const colSpacing = (W - 120) / Math.max(cols - 1, 1);
-        const rowSpacing = (H - 80) / Math.max(rows - 1, 1);
-        for (let i = 0; i < nodes.length; i++) {
-            const col = i % cols;
-            const row = Math.floor(i / cols);
-            positions.push({
-                x: 60 + col * colSpacing,
-                y: 40 + row * rowSpacing,
-            });
-        }
-    }
-
-    let svg = `<svg class="graph-viz-svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
-    svg += `<defs><marker id="gv-arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#A0785A"/></marker></defs>`;
-
-    for (const edge of edges) {
-        const srcNode = nodeMap[edge.source];
-        const tgtNode = nodeMap[edge.target];
-        if (!srcNode || !tgtNode) continue;
-        const srcPos = positions[srcNode.index];
-        const tgtPos = positions[tgtNode.index];
-        if (!srcPos || !tgtPos) continue;
-
-        const dx = tgtPos.x - srcPos.x;
-        const dy = tgtPos.y - srcPos.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 1) continue;
-        const offset = 22;
-        const endX = tgtPos.x - (dx / dist) * offset;
-        const endY = tgtPos.y - (dy / dist) * offset;
-
-        const midX = (srcPos.x + endX) / 2;
-        const midY = (srcPos.y + endY) / 2;
-
-        svg += `<line class="gv-edge" x1="${srcPos.x}" y1="${srcPos.y}" x2="${endX}" y2="${endY}"/>`;
-        if (edge.label) {
-            svg += `<text class="gv-edge-label" x="${midX}" y="${midY - 4}">${escapeHtml(edge.label)}</text>`;
-        }
-    }
-
-    for (let i = 0; i < nodes.length; i++) {
-        const node = nodes[i];
-        const pos = positions[i];
-        const color = _getNodeColor(node.label);
-        const labelShort = node.label.length > 20 ? node.label.substring(0, 18) + '…' : node.label;
-
-        svg += `<g class="gv-node" transform="translate(${pos.x},${pos.y})">`;
-        svg += `<circle class="gv-node-circle" r="20" fill="${color}" fill-opacity="0.15" stroke="${color}"/>`;
-        svg += `<text class="gv-node-label" y="4" fill="${color}">${escapeHtml(labelShort)}</text>`;
-        svg += `</g>`;
-    }
-
-    svg += `</svg>`;
-
-    const usedTypes = new Set();
-    for (const node of nodes) {
-        const lower = node.label.toLowerCase();
-        for (const [key] of Object.entries(NODE_TYPE_COLORS)) {
-            if (key !== 'default' && lower.includes(key)) {
-                usedTypes.add(key);
-                break;
-            }
-        }
-    }
-
-    let legend = '<div class="graph-viz-legend">';
-    const typeLabels = {
-        aide: 'Aide', autorisation: 'Autorisation', recours: 'Recours',
-        condition: 'Condition', piecejustificative: 'Pièce',
-        niveauhitl: 'HITL', procedure: 'Procédure', document: 'Document',
-    };
-    for (const type of usedTypes) {
-        legend += `<div class="graph-viz-legend-item"><span class="graph-viz-legend-dot" style="background:${NODE_TYPE_COLORS[type]}"></span>${typeLabels[type] || type}</div>`;
-    }
-    legend += '</div>';
-
-    return svg + legend;
 }
 
 function renderRecommandation(rec) {

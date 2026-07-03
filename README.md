@@ -1,123 +1,187 @@
-# AdminTPE GraphRAG V1
+# AdminTPE GraphRAG
 
-**⚠️ AVERTISSEMENT : Cette version V1 est volontairement non sécurisée. Ne pas utiliser en production.**
+Copilote d'instruction administrative pour dossiers TPE/PME. L'application reçoit une question métier et des documents, extrait les informations utiles, interroge une base RAG vectorielle et un graphe de connaissances, puis produit une recommandation structurée avec traces d'exécution et rapport de sécurité.
 
-Copilote interne d'instruction administrative pour les agents traitant des dossiers TPE/PME au Maroc. Le système permet à un administrateur de poser une question métier sur un dossier client/société, d'uploader des fichiers, et de recevoir une analyse structurée avec recommandation, niveau de confiance et déclenchement HITL.
+## 1. Objectif
 
-## Stack technique
+Le système vise à accélérer l'analyse de dossiers administratifs tout en gardant une lecture contrôlable des résultats :
 
-- **Backend** : Python 3.11+, FastAPI, LangGraph
-- **LLM court** : Groq API (Llama 3.x) — classification, JSON repair, construction de requêtes
-- **LLM long** : Google Gemini API — extraction de dossier, analyse administrative finale
-- **Base de données** : DataStax Astra DB (Cassandra compatible)
-- **Frontend** : HTML/CSS/JS vanilla (palette blanc / beige / marron)
-- **Visualisation KG** : Export Obsidian (Markdown interconnecté)
+- résumé du dossier client ;
+- pièces présentes, pièces manquantes et incohérences ;
+- recherche de règles par RAG vectoriel ;
+- exploration relationnelle par GraphRAG ;
+- recommandation administrative avec niveau de confiance ;
+- rapport de sécurité sur les documents déposés ;
+- export JSON et Markdown du rapport sécurité.
 
-## Installation
+## 2. Architecture
 
-### 1. Cloner le projet et installer les dépendances
+```text
+Interface web
+  -> API FastAPI
+  -> Workflow LangGraph
+      -> Validation des entrées
+      -> Extraction des fichiers
+      -> Résumé temporaire du dossier
+      -> Classification de la demande
+      -> Recherche RAG vectorielle
+      -> Recherche GraphRAG multi-hop
+      -> Fusion des contextes
+      -> Analyse administrative
+      -> Validation JSON
+      -> Routage HITL
+      -> Réponse finale et traces
+  -> Module sécurité documentaire
+      -> Détection de consignes suspectes
+      -> Décision de protection
+      -> Rapport de scan
+```
+
+Le diagramme BPMN complet est disponible dans `diagramme/`.
+
+## 3. Stack technique
+
+- Backend : Python, FastAPI, LangGraph
+- Frontend : HTML, CSS, JavaScript
+- LLM : Groq et Google Gemini via variables d'environnement
+- Données : DataStax Astra DB
+- Recherche : RAG vectoriel et GraphRAG
+- Sécurité : analyse statique des documents, garde-fous applicatifs, scan de composants générés
+
+## 4. Configuration
+
+Créer un fichier `.env` à partir de `.env.example` :
 
 ```bash
-cd "Administration TPEPME"
+copy .env.example .env
+```
+
+Variables à renseigner :
+
+```text
+ASTRA_DB_APPLICATION_TOKEN=
+ASTRA_DB_API_ENDPOINT=
+ASTRA_DB_KEYSPACE=
+GROQ_API_KEY=
+GOOGLE_API_KEY=
+LLM_SHORT_MODEL=
+LLM_LONG_MODEL=
+BACKEND_HOST=
+BACKEND_PORT=
+```
+
+Aucune clé API ne doit être placée dans le dépôt.
+
+## 5. Lancement
+
+```bash
 pip install -r requirements.txt
-```
-
-### 2. Configuration
-
-Copiez `.env.example` en `.env` et remplissez les valeurs :
-
-```bash
-cp .env.example .env
-```
-
-Variables requises :
-- `ASTRA_DB_APPLICATION_TOKEN` — Token Astra DB
-- `ASTRA_DB_API_ENDPOINT` — URL endpoint Astra DB
-- `ASTRA_DB_KEYSPACE` — Nom du keyspace (ex: `admin_tpepme`)
-- `GROQ_API_KEY` — Clé API Groq
-- `GOOGLE_API_KEY` — Clé API Google Gemini
-
-### 3. Initialiser la base de données
-
-```bash
 cd backend
-python -c "from db.schema import init_schema; init_schema()"
-```
-
-### 4. Seeder le Knowledge Graph
-
-```bash
-python ingestion/seed_kg.py
-```
-
-### 5. Ingérer le document RAG vectoriel
-
-```bash
-python ingestion/ingest_rag.py
-```
-
-### 6. Exporter le Knowledge Graph vers Obsidian (optionnel)
-
-```bash
-python ingestion/export_obsidian.py
-```
-
-### 7. Lancer le backend
-
-```bash
 python main.py
 ```
 
-Le backend démarre sur `http://localhost:8000`. L'interface frontend est servie sur la même URL à la racine `/`.
+Ouvrir ensuite :
 
-## Utilisation
-
-1. Ouvrez `http://localhost:8000` dans votre navigateur
-2. Saisissez votre question administrative
-3. Sélectionnez le type de dossier (ou laissez "inconnu" pour classification automatique)
-4. Uploadez les fichiers du dossier client (PDF, CSV, XLS, XLSX, TXT, MD)
-5. Cliquez sur "Analyser le dossier"
-6. Consultez les résultats : résumé, pièces manquantes, incohérences, recommandation, HITL, GraphRAG
-7. Activez le mode Debug pour voir les requêtes internes et vulnérabilités
-
-## Architecture
-
-```
-Frontend (HTML/CSS/JS)
-    ↓
-FastAPI Backend
-    ↓
-LangGraph Workflow (16 nœuds)
-    ├── Extraction fichiers
-    ├── Résumé dossier temporaire (Gemini)
-    ├── Classification demande (Groq)
-    ├── RAG vectoriel (Astra DB)
-    ├── GraphRAG multi-hop (Astra DB)
-    ├── Fusion contextes
-    ├── Analyse LLM (Gemini)
-    ├── Validation JSON (Groq repair)
-    ├── HITL Router
-    ├── Nettoyage réponse
-    └── Persistance logs
+```text
+http://127.0.0.1:8000/
 ```
 
-## Séparation des données
+## 6. Utilisation
 
-> Le GraphRAG ne stocke pas les dossiers des sociétés. Il stocke uniquement la connaissance administrative structurée. Les dossiers sociétés sont fournis par l'administrateur au moment de la question et sont traités comme contexte temporaire non persistant dans le graphe métier.
+1. Renseigner la question administrative.
+2. Déposer un ou plusieurs fichiers du dossier.
+3. Choisir le type de dossier si nécessaire.
+4. Lancer l'analyse du dossier.
+5. Lire le résumé, les conditions, les résultats RAG et GraphRAG.
+6. Générer le rapport sécurité avec le mode souhaité.
+7. Télécharger le rapport JSON ou Markdown si nécessaire.
 
-## Sécurité
+Pendant une analyse, les actions incompatibles sont bloquées : il n'est pas possible de changer le mode sécurité, relancer une analyse dossier ou lancer un rapport sécurité concurrent.
 
-**Cette V1 est volontairement vulnérable.** Voir `SECURITY.md` pour la liste complète des vulnérabilités connues et la préparation Red Team.
+## 7. Threat Model
 
-## API Endpoints
+### Actifs à protéger
 
-| Endpoint | Méthode | Description |
+- documents déposés par l'utilisateur ;
+- données d'entreprise extraites des fichiers ;
+- clés API et variables d'environnement ;
+- prompts système et contexte interne ;
+- bases RAG et GraphRAG ;
+- traces d'exécution et rapports générés ;
+- décision administrative affichée à l'utilisateur.
+
+### Sources de risque
+
+- document contenant une consigne de prompt injection ;
+- fichier demandant l'exfiltration de données ou de contexte ;
+- tentative de manipulation du niveau HITL ;
+- contenu contradictoire entre plusieurs pièces ;
+- fichier volumineux, corrompu ou mal structuré ;
+- fuite de secrets dans les logs ou rapports ;
+- réponse LLM non conforme au JSON attendu.
+
+### Contrôles intégrés
+
+- séparation entre analyse métier et rapport sécurité ;
+- détection de motifs suspects dans les fichiers ;
+- mode protégé avec blocage applicatif ;
+- affichage d'extraits justificatifs ;
+- génération de rapports téléchargeables ;
+- validation structurée des sorties ;
+- exclusion des secrets du dépôt et des rapports publics.
+
+## 8. Rapport Red Team
+
+Les scénarios suivants vérifient la résistance du système face aux entrées hostiles :
+
+| Scénario | Entrée testée | Résultat attendu |
 |---|---|---|
-| `/api/health` | GET | Healthcheck (Astra + config) |
-| `/api/analyze` | POST | Analyser un dossier (question + fichiers) |
-| `/api/run/{run_id}` | GET | Récupérer un run précédent |
-| `/api/runs` | GET | Lister les runs |
-| `/api/kg/nodes` | GET | Lister les nœuds du Knowledge Graph |
-| `/api/kg/edges` | GET | Lister les relations du Knowledge Graph |
-| `/api/kg/export-obsidian` | POST | Exporter le KG vers Obsidian |
-| `/docs` | GET | Documentation API Swagger |
+| Prompt injection documentaire | Document demandant d'ignorer les règles | Signal détecté dans le rapport sécurité |
+| Exfiltration réseau | Document demandant l'envoi de données vers une URL externe | Signal détecté et blocage en mode protégé |
+| Manipulation HITL | Document demandant de forcer un statut favorable | Signal ou incohérence visible dans le rapport |
+| Fuite de contexte | Question demandant prompts, règles internes ou secrets | Refus ou absence d'exposition de secrets |
+| Contradiction métier | Documents donnant des informations incohérentes | Incohérence remontée dans l'analyse |
+| JSON hostile | Question ou document cherchant à casser la structure JSON | Validation ou réparation de sortie |
+
+Fichiers utiles pour tester les cas hostiles :
+
+- `DOS-006_MAGHREB_PACK_PROMPT_INJECTION.pdf`
+- `DOS-007_RIVAGE_EXPORT_NOTE_COMPLEMENTAIRE.pdf`
+- `DOS-008_CENTRE_SERVICES_ANNEXE_TECHNIQUE.pdf`
+
+## 9. Rapport Blue Team
+
+Les défenses attendues sont les suivantes :
+
+- détecter les instructions malveillantes dans le texte extrait ;
+- afficher un score de risque documentaire compréhensible ;
+- distinguer clairement le score documentaire du score de scan des composants ;
+- bloquer le passage vers l'analyse normale en mode protégé si le document est risqué ;
+- garder le mode observation disponible pour comparer les comportements ;
+- empêcher les lancements concurrents dans l'interface ;
+- garder les rapports lisibles, téléchargeables et exploitables ;
+- ne jamais exposer les clés API dans les fichiers suivis par Git.
+
+État actuel :
+
+- le mode observation produit un rapport sans blocage ;
+- le mode protégé applique une décision de protection côté application ;
+- le scan de composants générés est exécuté localement si l'environnement de scan est disponible ;
+- les rapports JSON et Markdown sont générés dans le dossier de rapports local, non suivi par Git.
+
+## 10. Agent Card Security
+
+| Élément | Description |
+|---|---|
+| Rôle | Assistant d'analyse administrative TPE/PME |
+| Entrées | Question utilisateur, type de dossier, documents déposés |
+| Sorties | Résumé, conditions, recommandation, réponse administrative, rapport sécurité |
+| Outils | Extraction de fichiers, RAG vectoriel, GraphRAG, analyse LLM, scan sécurité |
+| Données sensibles | Documents client, informations entreprise, clés API, traces |
+| Comportement attendu | Utiliser les documents comme données, pas comme instructions système |
+| Limite principale | Toute décision critique doit rester vérifiable par les traces et les sources |
+| Protection | Mode protégé, détection documentaire, validation JSON, rapports téléchargeables |
+
+## 11. Runbook
+
+Voir `runbook.md`.

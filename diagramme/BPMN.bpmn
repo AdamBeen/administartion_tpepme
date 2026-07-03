@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" id="Definitions_AdminTPE_Complete" targetNamespace="https://admintpe.local/bpmn/complete" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.13.2">
+  <bpmn:process id="Process_AdminTPE_Complete" name="AdminTPE GraphRAG - Analyse dossier et contrôle sécurité" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_AdminTPE">
+      <bpmn:lane id="Lane_User" name="Interface utilisateur">
+        <bpmn:flowNodeRef>Start_Request</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Select_Mode</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Upload_Dossier</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Display_Result</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Download_Report</bpmn:flowNodeRef><bpmn:flowNodeRef>End_Completed</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Security" name="Contrôles sécurité">
+        <bpmn:flowNodeRef>Gateway_Mode</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Static_Screening</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Groq_Guard</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_Blocked</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Block_Request</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Skillspector_Report</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Save_Security_Report</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Workflow" name="Workflow LangGraph">
+        <bpmn:flowNodeRef>Task_Extract_Files</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Build_Summary</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Classify_Request</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_Retrieval</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Vector_RAG</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_GraphRAG</bpmn:flowNodeRef><bpmn:flowNodeRef>Gateway_Retrieval_Join</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Analyze_Dossier</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Evaluate_Dossier</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_HITL_Router</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Clean_Response</bpmn:flowNodeRef><bpmn:flowNodeRef>Task_Debug_Timeline</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="Start_Request" name="Ouvrir l espace d analyse"><bpmn:outgoing>Flow_Start_Mode</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:userTask id="Task_Select_Mode" name="Choisir sécurisé ou non sécurisé"><bpmn:incoming>Flow_Start_Mode</bpmn:incoming><bpmn:outgoing>Flow_Mode_Upload</bpmn:outgoing></bpmn:userTask>
+    <bpmn:userTask id="Task_Upload_Dossier" name="Saisir la demande et déposer les fichiers"><bpmn:incoming>Flow_Mode_Upload</bpmn:incoming><bpmn:outgoing>Flow_Upload_Gateway</bpmn:outgoing></bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Mode" name="Mode sécurisé activé ?"><bpmn:incoming>Flow_Upload_Gateway</bpmn:incoming><bpmn:outgoing>Flow_Unsecured_To_Workflow</bpmn:outgoing><bpmn:outgoing>Flow_Secured_Static</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_Static_Screening" name="Détecter injection, secrets et exfiltration"><bpmn:incoming>Flow_Secured_Static</bpmn:incoming><bpmn:outgoing>Flow_Static_Groq</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Groq_Guard" name="Contrôler le prompt avec Groq Guard"><bpmn:incoming>Flow_Static_Groq</bpmn:incoming><bpmn:outgoing>Flow_Groq_Blocked</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_Blocked" name="Risque à bloquer ?"><bpmn:incoming>Flow_Groq_Blocked</bpmn:incoming><bpmn:outgoing>Flow_Blocked</bpmn:outgoing><bpmn:outgoing>Flow_Allowed_To_Workflow</bpmn:outgoing></bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_Block_Request" name="Bloquer la demande et journaliser"><bpmn:incoming>Flow_Blocked</bpmn:incoming><bpmn:outgoing>Flow_Block_Report</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Extract_Files" name="Extraire PDF, tableurs et texte"><bpmn:incoming>Flow_Unsecured_To_Workflow</bpmn:incoming><bpmn:incoming>Flow_Allowed_To_Workflow</bpmn:incoming><bpmn:outgoing>Flow_Extract_Summary</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Build_Summary" name="Construire résumé dossier, pièces et incohérences"><bpmn:incoming>Flow_Extract_Summary</bpmn:incoming><bpmn:outgoing>Flow_Summary_Classify</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Classify_Request" name="Classifier type de demande administrative"><bpmn:incoming>Flow_Summary_Classify</bpmn:incoming><bpmn:outgoing>Flow_Classify_Retrieval</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:parallelGateway id="Gateway_Retrieval" name="Recherche contexte"><bpmn:incoming>Flow_Classify_Retrieval</bpmn:incoming><bpmn:outgoing>Flow_Retrieval_Vector</bpmn:outgoing><bpmn:outgoing>Flow_Retrieval_Graph</bpmn:outgoing></bpmn:parallelGateway>
+    <bpmn:serviceTask id="Task_Vector_RAG" name="Rechercher contexte RAG vectoriel"><bpmn:incoming>Flow_Retrieval_Vector</bpmn:incoming><bpmn:outgoing>Flow_Vector_Join</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_GraphRAG" name="Rechercher chemins GraphRAG multi-hop"><bpmn:incoming>Flow_Retrieval_Graph</bpmn:incoming><bpmn:outgoing>Flow_Graph_Join</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:parallelGateway id="Gateway_Retrieval_Join"><bpmn:incoming>Flow_Vector_Join</bpmn:incoming><bpmn:incoming>Flow_Graph_Join</bpmn:incoming><bpmn:outgoing>Flow_Retrieval_Analyze</bpmn:outgoing></bpmn:parallelGateway>
+    <bpmn:serviceTask id="Task_Analyze_Dossier" name="Générer conditions, recommandation et réponse"><bpmn:incoming>Flow_Retrieval_Analyze</bpmn:incoming><bpmn:outgoing>Flow_Analyze_Evaluate</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Evaluate_Dossier" name="Évaluer éligibilité, pièces manquantes et risques"><bpmn:incoming>Flow_Analyze_Evaluate</bpmn:incoming><bpmn:outgoing>Flow_Evaluate_HITL</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_HITL_Router" name="Déterminer le niveau HITL"><bpmn:incoming>Flow_Evaluate_HITL</bpmn:incoming><bpmn:outgoing>Flow_HITL_Clean</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Clean_Response" name="Normaliser JSON, cartes UI et réponse finale"><bpmn:incoming>Flow_HITL_Clean</bpmn:incoming><bpmn:outgoing>Flow_Clean_Debug</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Debug_Timeline" name="Préparer debug, requêtes et timeline"><bpmn:incoming>Flow_Clean_Debug</bpmn:incoming><bpmn:outgoing>Flow_Debug_Report</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Skillspector_Report" name="Générer rapport sécurité lisible"><bpmn:incoming>Flow_Block_Report</bpmn:incoming><bpmn:incoming>Flow_Debug_Report</bpmn:incoming><bpmn:outgoing>Flow_Report_Save</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Save_Security_Report" name="Sauvegarder JSON et Markdown"><bpmn:incoming>Flow_Report_Save</bpmn:incoming><bpmn:outgoing>Flow_Report_Display</bpmn:outgoing></bpmn:serviceTask>
+    <bpmn:userTask id="Task_Display_Result" name="Afficher résumé, RAG, GraphRAG, HITL et sécurité"><bpmn:incoming>Flow_Report_Display</bpmn:incoming><bpmn:outgoing>Flow_Display_Download</bpmn:outgoing></bpmn:userTask>
+    <bpmn:userTask id="Task_Download_Report" name="Télécharger rapport et consulter JSON brut"><bpmn:incoming>Flow_Display_Download</bpmn:incoming><bpmn:outgoing>Flow_Download_End</bpmn:outgoing></bpmn:userTask>
+    <bpmn:endEvent id="End_Completed" name="Résultat disponible"><bpmn:incoming>Flow_Download_End</bpmn:incoming></bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_Start_Mode" sourceRef="Start_Request" targetRef="Task_Select_Mode" />
+    <bpmn:sequenceFlow id="Flow_Mode_Upload" sourceRef="Task_Select_Mode" targetRef="Task_Upload_Dossier" />
+    <bpmn:sequenceFlow id="Flow_Upload_Gateway" sourceRef="Task_Upload_Dossier" targetRef="Gateway_Mode" />
+    <bpmn:sequenceFlow id="Flow_Unsecured_To_Workflow" name="Non sécurisé" sourceRef="Gateway_Mode" targetRef="Task_Extract_Files" />
+    <bpmn:sequenceFlow id="Flow_Secured_Static" name="Sécurisé" sourceRef="Gateway_Mode" targetRef="Task_Static_Screening" />
+    <bpmn:sequenceFlow id="Flow_Static_Groq" sourceRef="Task_Static_Screening" targetRef="Task_Groq_Guard" />
+    <bpmn:sequenceFlow id="Flow_Groq_Blocked" sourceRef="Task_Groq_Guard" targetRef="Gateway_Blocked" />
+    <bpmn:sequenceFlow id="Flow_Blocked" name="Bloqué" sourceRef="Gateway_Blocked" targetRef="Task_Block_Request" />
+    <bpmn:sequenceFlow id="Flow_Allowed_To_Workflow" name="Autorisé" sourceRef="Gateway_Blocked" targetRef="Task_Extract_Files" />
+    <bpmn:sequenceFlow id="Flow_Block_Report" sourceRef="Task_Block_Request" targetRef="Task_Skillspector_Report" />
+    <bpmn:sequenceFlow id="Flow_Extract_Summary" sourceRef="Task_Extract_Files" targetRef="Task_Build_Summary" />
+    <bpmn:sequenceFlow id="Flow_Summary_Classify" sourceRef="Task_Build_Summary" targetRef="Task_Classify_Request" />
+    <bpmn:sequenceFlow id="Flow_Classify_Retrieval" sourceRef="Task_Classify_Request" targetRef="Gateway_Retrieval" />
+    <bpmn:sequenceFlow id="Flow_Retrieval_Vector" sourceRef="Gateway_Retrieval" targetRef="Task_Vector_RAG" />
+    <bpmn:sequenceFlow id="Flow_Retrieval_Graph" sourceRef="Gateway_Retrieval" targetRef="Task_GraphRAG" />
+    <bpmn:sequenceFlow id="Flow_Vector_Join" sourceRef="Task_Vector_RAG" targetRef="Gateway_Retrieval_Join" />
+    <bpmn:sequenceFlow id="Flow_Graph_Join" sourceRef="Task_GraphRAG" targetRef="Gateway_Retrieval_Join" />
+    <bpmn:sequenceFlow id="Flow_Retrieval_Analyze" sourceRef="Gateway_Retrieval_Join" targetRef="Task_Analyze_Dossier" />
+    <bpmn:sequenceFlow id="Flow_Analyze_Evaluate" sourceRef="Task_Analyze_Dossier" targetRef="Task_Evaluate_Dossier" />
+    <bpmn:sequenceFlow id="Flow_Evaluate_HITL" sourceRef="Task_Evaluate_Dossier" targetRef="Task_HITL_Router" />
+    <bpmn:sequenceFlow id="Flow_HITL_Clean" sourceRef="Task_HITL_Router" targetRef="Task_Clean_Response" />
+    <bpmn:sequenceFlow id="Flow_Clean_Debug" sourceRef="Task_Clean_Response" targetRef="Task_Debug_Timeline" />
+    <bpmn:sequenceFlow id="Flow_Debug_Report" sourceRef="Task_Debug_Timeline" targetRef="Task_Skillspector_Report" />
+    <bpmn:sequenceFlow id="Flow_Report_Save" sourceRef="Task_Skillspector_Report" targetRef="Task_Save_Security_Report" />
+    <bpmn:sequenceFlow id="Flow_Report_Display" sourceRef="Task_Save_Security_Report" targetRef="Task_Display_Result" />
+    <bpmn:sequenceFlow id="Flow_Display_Download" sourceRef="Task_Display_Result" targetRef="Task_Download_Report" />
+    <bpmn:sequenceFlow id="Flow_Download_End" sourceRef="Task_Download_Report" targetRef="End_Completed" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_AdminTPE_Complete">
+    <bpmndi:BPMNPlane id="BPMNPlane_AdminTPE_Complete" bpmnElement="Process_AdminTPE_Complete">
+      <bpmndi:BPMNShape id="Shape_Start_Request" bpmnElement="Start_Request" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022"><dc:Bounds x="100" y="342" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Select_Mode" bpmnElement="Task_Select_Mode" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="180" y="320" width="150" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Upload_Dossier" bpmnElement="Task_Upload_Dossier" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="390" y="320" width="190" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_Mode" bpmnElement="Gateway_Mode" isMarkerVisible="true" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022"><dc:Bounds x="650" y="335" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Static_Screening" bpmnElement="Task_Static_Screening" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="770" y="120" width="190" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Groq_Guard" bpmnElement="Task_Groq_Guard" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="1020" y="120" width="190" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_Blocked" bpmnElement="Gateway_Blocked" isMarkerVisible="true" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022"><dc:Bounds x="1280" y="135" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Block_Request" bpmnElement="Task_Block_Request" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="1410" y="60" width="190" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Extract_Files" bpmnElement="Task_Extract_Files" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="770" y="320" width="180" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Build_Summary" bpmnElement="Task_Build_Summary" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="1010" y="320" width="190" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Classify_Request" bpmnElement="Task_Classify_Request" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="1260" y="320" width="190" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_Retrieval" bpmnElement="Gateway_Retrieval" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022"><dc:Bounds x="1520" y="335" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Vector_RAG" bpmnElement="Task_Vector_RAG" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="1650" y="250" width="190" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_GraphRAG" bpmnElement="Task_GraphRAG" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="1650" y="440" width="190" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_Retrieval_Join" bpmnElement="Gateway_Retrieval_Join" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022"><dc:Bounds x="1920" y="335" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Analyze_Dossier" bpmnElement="Task_Analyze_Dossier" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="2050" y="320" width="200" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Evaluate_Dossier" bpmnElement="Task_Evaluate_Dossier" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="2310" y="320" width="210" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_HITL_Router" bpmnElement="Task_HITL_Router" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="2580" y="320" width="170" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Clean_Response" bpmnElement="Task_Clean_Response" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="2810" y="320" width="210" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Debug_Timeline" bpmnElement="Task_Debug_Timeline" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="3080" y="320" width="190" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Skillspector_Report" bpmnElement="Task_Skillspector_Report" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="3330" y="220" width="210" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Save_Security_Report" bpmnElement="Task_Save_Security_Report" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="3600" y="220" width="190" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Display_Result" bpmnElement="Task_Display_Result" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="3850" y="220" width="210" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Download_Report" bpmnElement="Task_Download_Report" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00"><dc:Bounds x="4120" y="220" width="200" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_Completed" bpmnElement="End_Completed" bioc:stroke="#831311" bioc:fill="#ffcdd2" color:background-color="#ffcdd2" color:border-color="#831311"><dc:Bounds x="4400" y="242" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_Start_Mode_di" bpmnElement="Flow_Start_Mode"><di:waypoint x="136" y="360" /><di:waypoint x="180" y="360" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Mode_Upload_di" bpmnElement="Flow_Mode_Upload"><di:waypoint x="330" y="360" /><di:waypoint x="390" y="360" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Upload_Gateway_di" bpmnElement="Flow_Upload_Gateway"><di:waypoint x="580" y="360" /><di:waypoint x="650" y="360" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Secured_Static_di" bpmnElement="Flow_Secured_Static"><di:waypoint x="675" y="335" /><di:waypoint x="675" y="160" /><di:waypoint x="770" y="160" /><bpmndi:BPMNLabel><dc:Bounds x="695" y="180" width="60" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Unsecured_To_Workflow_di" bpmnElement="Flow_Unsecured_To_Workflow"><di:waypoint x="700" y="360" /><di:waypoint x="770" y="360" /><bpmndi:BPMNLabel><dc:Bounds x="710" y="338" width="82" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Static_Groq_di" bpmnElement="Flow_Static_Groq"><di:waypoint x="960" y="160" /><di:waypoint x="1020" y="160" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Groq_Blocked_di" bpmnElement="Flow_Groq_Blocked"><di:waypoint x="1210" y="160" /><di:waypoint x="1280" y="160" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Blocked_di" bpmnElement="Flow_Blocked"><di:waypoint x="1305" y="135" /><di:waypoint x="1305" y="100" /><di:waypoint x="1410" y="100" /><bpmndi:BPMNLabel><dc:Bounds x="1330" y="82" width="45" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Allowed_To_Workflow_di" bpmnElement="Flow_Allowed_To_Workflow"><di:waypoint x="1305" y="185" /><di:waypoint x="1305" y="210" /><di:waypoint x="860" y="210" /><di:waypoint x="860" y="320" /><bpmndi:BPMNLabel><dc:Bounds x="1085" y="190" width="55" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Block_Report_di" bpmnElement="Flow_Block_Report"><di:waypoint x="1600" y="100" /><di:waypoint x="3435" y="100" /><di:waypoint x="3435" y="220" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Extract_Summary_di" bpmnElement="Flow_Extract_Summary"><di:waypoint x="950" y="360" /><di:waypoint x="1010" y="360" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Summary_Classify_di" bpmnElement="Flow_Summary_Classify"><di:waypoint x="1200" y="360" /><di:waypoint x="1260" y="360" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Classify_Retrieval_di" bpmnElement="Flow_Classify_Retrieval"><di:waypoint x="1450" y="360" /><di:waypoint x="1520" y="360" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Retrieval_Vector_di" bpmnElement="Flow_Retrieval_Vector"><di:waypoint x="1545" y="335" /><di:waypoint x="1545" y="290" /><di:waypoint x="1650" y="290" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Retrieval_Graph_di" bpmnElement="Flow_Retrieval_Graph"><di:waypoint x="1545" y="385" /><di:waypoint x="1545" y="480" /><di:waypoint x="1650" y="480" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Vector_Join_di" bpmnElement="Flow_Vector_Join"><di:waypoint x="1840" y="290" /><di:waypoint x="1945" y="290" /><di:waypoint x="1945" y="335" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Graph_Join_di" bpmnElement="Flow_Graph_Join"><di:waypoint x="1840" y="480" /><di:waypoint x="1945" y="480" /><di:waypoint x="1945" y="385" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Retrieval_Analyze_di" bpmnElement="Flow_Retrieval_Analyze"><di:waypoint x="1970" y="360" /><di:waypoint x="2050" y="360" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Analyze_Evaluate_di" bpmnElement="Flow_Analyze_Evaluate"><di:waypoint x="2250" y="360" /><di:waypoint x="2310" y="360" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Evaluate_HITL_di" bpmnElement="Flow_Evaluate_HITL"><di:waypoint x="2520" y="360" /><di:waypoint x="2580" y="360" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_HITL_Clean_di" bpmnElement="Flow_HITL_Clean"><di:waypoint x="2750" y="360" /><di:waypoint x="2810" y="360" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Clean_Debug_di" bpmnElement="Flow_Clean_Debug"><di:waypoint x="3020" y="360" /><di:waypoint x="3080" y="360" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Debug_Report_di" bpmnElement="Flow_Debug_Report"><di:waypoint x="3270" y="360" /><di:waypoint x="3435" y="360" /><di:waypoint x="3435" y="300" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Report_Save_di" bpmnElement="Flow_Report_Save"><di:waypoint x="3540" y="260" /><di:waypoint x="3600" y="260" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Report_Display_di" bpmnElement="Flow_Report_Display"><di:waypoint x="3790" y="260" /><di:waypoint x="3850" y="260" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Display_Download_di" bpmnElement="Flow_Display_Download"><di:waypoint x="4060" y="260" /><di:waypoint x="4120" y="260" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Download_End_di" bpmnElement="Flow_Download_End"><di:waypoint x="4320" y="260" /><di:waypoint x="4400" y="260" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

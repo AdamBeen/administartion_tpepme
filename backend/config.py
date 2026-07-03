@@ -18,7 +18,7 @@ class Settings:
     BACKEND_HOST: str = os.getenv("BACKEND_HOST", "0.0.0.0")
     BACKEND_PORT: int = int(os.getenv("BACKEND_PORT", "8000"))
 
-    WORKFLOW_VERSION: str = os.getenv("WORKFLOW_VERSION", "v1_non_securisee")
+    WORKFLOW_VERSION: str = os.getenv("WORKFLOW_VERSION", "baseline_security_mode")
     MAX_FILE_SIZE_MB: int = int(os.getenv("MAX_FILE_SIZE_MB", "20"))
 
     @property
